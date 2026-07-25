@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Settings,
   Bell,
@@ -16,16 +17,17 @@ import {
   Radio,
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
+import { getTikTokLiveStatus } from "@/lib/tiktok.functions";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// Streamer configurável
 const STREAMER = {
+  username: "caiquevieira_",
   name: "Caiquevieira_",
-  isLive: false, // trocar quando integrar detecção de live
   tiktok: "https://www.tiktok.com/@caiquevieira_",
+  liveUrl: "https://www.tiktok.com/@caiquevieira_/live",
   instagram: "https://www.instagram.com/caiquevieira1",
   youtube: "https://youtube.com/@caiquevieira1",
   coinsUrl: "https://www.tiktok.com/coin",
@@ -35,6 +37,42 @@ const STREAMER = {
 
 function Index() {
   const [notifications, setNotifications] = useState(true);
+  const [notifyPerm, setNotifyPerm] = useState<NotificationPermission | "unsupported">(
+    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
+  );
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["tiktok-live", STREAMER.username],
+    queryFn: () => getTikTokLiveStatus({ data: { username: STREAMER.username } }),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+  });
+
+  const isLive = !!data?.isLive;
+
+  useEffect(() => {
+    if (!notifications || notifyPerm !== "granted" || !isLive) return;
+    const key = `notified:${STREAMER.username}:${data?.roomId ?? "live"}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    try {
+      new Notification(`${STREAMER.name} está ao vivo!`, {
+        body: "Toque para assistir agora no TikTok.",
+        icon: "/app-icon.png",
+      });
+    } catch {}
+  }, [isLive, notifications, notifyPerm, data?.roomId]);
+
+  const toggleNotifications = async () => {
+    const next = !notifications;
+    setNotifications(next);
+    if (next && notifyPerm === "default" && typeof window !== "undefined" && "Notification" in window) {
+      const perm = await Notification.requestPermission();
+      setNotifyPerm(perm);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
