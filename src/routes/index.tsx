@@ -90,7 +90,7 @@ function Index() {
               />
               <span
                 className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background ${
-                  STREAMER.isLive ? "bg-emerald-500" : "bg-muted-foreground/60"
+                  isLive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/60"
                 }`}
                 aria-hidden
               />
@@ -107,20 +107,24 @@ function Index() {
 
         {/* Status live */}
         <a
-          href={STREAMER.tiktok}
+          href={isLive ? STREAMER.liveUrl : STREAMER.tiktok}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-sm hover:bg-accent transition"
         >
           <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
-            <Radio className={`h-4 w-4 ${STREAMER.isLive ? "text-emerald-400" : "text-muted-foreground"}`} />
+            <Radio className={`h-4 w-4 ${isLive ? "text-emerald-400" : "text-muted-foreground"}`} />
           </span>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold">
-              {STREAMER.isLive ? "Ao vivo agora" : "Offline agora"}
+              {isLoading ? "Verificando..." : isLive ? "Ao vivo agora" : "Offline agora"}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {STREAMER.isLive ? "Toque para assistir" : "Aguarde a próxima live"}
+              {isLive
+                ? "Toque para assistir a live"
+                : isLoading
+                  ? "Consultando TikTok"
+                  : "Aguarde a próxima live"}
             </p>
           </div>
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -133,7 +137,7 @@ function Index() {
           </span>
           <p className="flex-1 text-sm font-semibold">Notificações</p>
           <button
-            onClick={() => setNotifications((v) => !v)}
+            onClick={toggleNotifications}
             className="flex items-center gap-2"
             aria-pressed={notifications}
           >
