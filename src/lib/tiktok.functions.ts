@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 
 /**
- * Detecta se um usuário TikTok está ao vivo consultando a página pública /live.
- * Não usa API oficial (o endpoint público não requer autenticação).
+ * Detecta se um usuário TikTok está ao vivo.
+ * Usa o endpoint público não-oficial api-live/user/room que a própria TikTok
+ * consome no site web. Retorna status=2 quando ao vivo; 4 = live encerrada.
  */
 export const getTikTokLiveStatus = createServerFn({ method: "GET" })
   .inputValidator((data: { username: string }) => {
@@ -12,41 +13,36 @@ export const getTikTokLiveStatus = createServerFn({ method: "GET" })
     return data;
   })
   .handler(async ({ data }) => {
-    const url = `https://www.tiktok.com/@${data.username}/live`;
+    const url = `https://www.tiktok.com/api-live/user/room/?aid=1988&sourceType=54&uniqueId=${encodeURIComponent(
+      data.username,
+    )}`;
     try {
       const res = await fetch(url, {
         headers: {
           "User-Agent":
-            "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          Referer: "https://www.tiktok.com/",
           "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
         },
-        redirect: "follow",
       });
-
       if (!res.ok) {
-        return { isLive: false, checkedAt: Date.now(), error: `status_${res.status}` as const };
+        return { isLive: false, checkedAt: Date.now(), error: `http_${res.status}` };
       }
-
-      const html = await res.text();
-
-      // A página /live embute um JSON de hidratação. Quando o streamer está
-      // ao vivo há um liveRoom com status 2 (ou 4, em pré-live). Quando offline
-      // a página traz "LiveRoom":{...,"liveRoomUserInfo":...} porém sem
-      // "status":2 e geralmente exibe recomendações.
-      const statusMatch = html.match(/"status"\s*:\s*(\d+)[^}]{0,200}"roomId"/);
-      const roomIdMatch = html.match(/"roomId"\s*:\s*"(\d+)"/);
-      const liveStatusFlag = html.match(/"liveStatus"\s*:\s*(\d+)/);
-
-      const status = statusMatch ? Number(statusMatch[1]) : null;
-      const liveStatus = liveStatusFlag ? Number(liveStatusFlag[1]) : null;
-      const roomId = roomIdMatch && roomIdMatch[1] !== "0" ? roomIdMatch[1] : null;
-
-      // status === 2 => ao vivo. liveStatus === 1 também indica live.
-      const isLive = status === 2 || liveStatus === 1;
-
+      const json = (await res.json()) as {
+        data?: {
+          user?: { status?: number; roomId?: string; nickname?: string };
+          liveRoom?: { status?: number; title?: string; liveRoomStats?: { userCount?: number } };
+        };
+      };
+      const liveStatus = json?.data?.liveRoom?.status;
+      const userStatus = json?.data?.user?.status;
+      // status === 2 => ao vivo agora. 4 => live encerrada. 0/undef => offline.
+      const isLive = liveStatus === 2 || userStatus === 2;
       return {
         isLive,
-        roomId,
+        roomId: json?.data?.user?.roomId ?? null,
+        title: json?.data?.liveRoom?.title ?? null,
+        viewers: json?.data?.liveRoom?.liveRoomStats?.userCount ?? null,
         checkedAt: Date.now(),
       };
     } catch (err) {
