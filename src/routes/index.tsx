@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Settings,
   Bell,
@@ -16,16 +17,17 @@ import {
   Radio,
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
+import { getTikTokLiveStatus } from "@/lib/tiktok.functions";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// Streamer configurável
 const STREAMER = {
+  username: "caiquevieira_",
   name: "Caiquevieira_",
-  isLive: false, // trocar quando integrar detecção de live
   tiktok: "https://www.tiktok.com/@caiquevieira_",
+  liveUrl: "https://www.tiktok.com/@caiquevieira_/live",
   instagram: "https://www.instagram.com/caiquevieira1",
   youtube: "https://youtube.com/@caiquevieira1",
   coinsUrl: "https://www.tiktok.com/coin",
@@ -35,6 +37,42 @@ const STREAMER = {
 
 function Index() {
   const [notifications, setNotifications] = useState(true);
+  const [notifyPerm, setNotifyPerm] = useState<NotificationPermission | "unsupported">(
+    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
+  );
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["tiktok-live", STREAMER.username],
+    queryFn: () => getTikTokLiveStatus({ data: { username: STREAMER.username } }),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+  });
+
+  const isLive = !!data?.isLive;
+
+  useEffect(() => {
+    if (!notifications || notifyPerm !== "granted" || !isLive) return;
+    const key = `notified:${STREAMER.username}:${data?.roomId ?? "live"}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    try {
+      new Notification(`${STREAMER.name} está ao vivo!`, {
+        body: "Toque para assistir agora no TikTok.",
+        icon: "/app-icon.png",
+      });
+    } catch {}
+  }, [isLive, notifications, notifyPerm, data?.roomId]);
+
+  const toggleNotifications = async () => {
+    const next = !notifications;
+    setNotifications(next);
+    if (next && notifyPerm === "default" && typeof window !== "undefined" && "Notification" in window) {
+      const perm = await Notification.requestPermission();
+      setNotifyPerm(perm);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
@@ -52,7 +90,7 @@ function Index() {
               />
               <span
                 className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background ${
-                  STREAMER.isLive ? "bg-emerald-500" : "bg-muted-foreground/60"
+                  isLive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/60"
                 }`}
                 aria-hidden
               />
@@ -69,20 +107,24 @@ function Index() {
 
         {/* Status live */}
         <a
-          href={STREAMER.tiktok}
+          href={isLive ? STREAMER.liveUrl : STREAMER.tiktok}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 shadow-sm hover:bg-accent transition"
         >
           <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
-            <Radio className={`h-4 w-4 ${STREAMER.isLive ? "text-emerald-400" : "text-muted-foreground"}`} />
+            <Radio className={`h-4 w-4 ${isLive ? "text-emerald-400" : "text-muted-foreground"}`} />
           </span>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold">
-              {STREAMER.isLive ? "Ao vivo agora" : "Offline agora"}
+              {isLoading ? "Verificando..." : isLive ? "Ao vivo agora" : "Offline agora"}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {STREAMER.isLive ? "Toque para assistir" : "Aguarde a próxima live"}
+              {isLive
+                ? "Toque para assistir a live"
+                : isLoading
+                  ? "Consultando TikTok"
+                  : "Aguarde a próxima live"}
             </p>
           </div>
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -95,7 +137,7 @@ function Index() {
           </span>
           <p className="flex-1 text-sm font-semibold">Notificações</p>
           <button
-            onClick={() => setNotifications((v) => !v)}
+            onClick={toggleNotifications}
             className="flex items-center gap-2"
             aria-pressed={notifications}
           >
