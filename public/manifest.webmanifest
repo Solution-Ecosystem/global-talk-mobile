@@ -1,0 +1,14 @@
+{
+  "name": "Caiquevieira_ — Notify",
+  "short_name": "Caiquevieira_",
+  "description": "Notificações de live do Caiquevieira_ no TikTok, chat, presentes, moedas e redes sociais.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1024",
+  "theme_color": "#0b1024",
+  "icons": [
+    { "src": "/app-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
