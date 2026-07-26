@@ -17,6 +17,7 @@ import {
   Radio,
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
+import tdcLogo from "@/assets/tdc-logo.png";
 import { getTikTokLiveStatus } from "@/lib/tiktok.functions";
 
 export const Route = createFileRoute("/")({
@@ -30,7 +31,7 @@ const STREAMER = {
   liveUrl: "https://www.tiktok.com/@caiquevieira_/live",
   instagram: "https://www.instagram.com/caiquevieira1",
   youtube: "https://youtube.com/@caiquevieira1",
-  coinsUrl: "https://www.tiktok.com/coin",
+  coinsUrl: "https://www.tiktok.com/coin?rc=BVMMD2AG&rie=",
   chatUrl: "https://www.tiktok.com/@caiquevieira_",
   galleryUrl: "https://www.tiktok.com/@caiquevieira_",
 };
@@ -40,6 +41,55 @@ function Index() {
   const [notifyPerm, setNotifyPerm] = useState<NotificationPermission | "unsupported">(
     typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
   );
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowSplash(false), 1800);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Registra o service worker que faz o polling do status da live
+  // mesmo quando o app está em segundo plano / instalado na tela inicial.
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    let cancelled = false;
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    (async () => {
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        if (cancelled) return;
+        await navigator.serviceWorker.ready;
+
+        // Tenta registrar Periodic Background Sync (Chrome Android instalado)
+        try {
+          // @ts-expect-error periodicSync is not in TS lib
+          if (reg.periodicSync) {
+            // @ts-expect-error
+            const status = await navigator.permissions.query({ name: "periodic-background-sync" });
+            if (status.state === "granted") {
+              // @ts-expect-error
+              await reg.periodicSync.register("tdc-live-check", {
+                minInterval: 15 * 60 * 1000, // 15 min
+              });
+            }
+          }
+        } catch {}
+
+        // Fallback: pinga o SW enquanto a página estiver aberta
+        const ping = () => navigator.serviceWorker.controller?.postMessage("check-live");
+        ping();
+        interval = setInterval(ping, 60_000);
+      } catch (err) {
+        console.warn("SW register falhou", err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (interval) clearInterval(interval);
+    };
+  }, []);
 
   const { data, isLoading } = useQuery({
     queryKey: ["tiktok-live", STREAMER.username],
@@ -56,26 +106,51 @@ function Index() {
     const key = `notified:${STREAMER.username}:${data?.roomId ?? "live"}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
-    try {
-      new Notification(`${STREAMER.name} está ao vivo!`, {
-        body: "Toque para assistir agora no TikTok.",
-        icon: "/app-icon.png",
-      });
-    } catch {}
+    (async () => {
+      try {
+        if ("serviceWorker" in navigator) {
+          const reg = await navigator.serviceWorker.ready;
+          await reg.showNotification("APP TDC — Streamer ao vivo!", {
+            body: "Toque para assistir agora no TikTok.",
+            icon: "/app-icon.png",
+            badge: "/app-icon.png",
+            tag: `tdc-live-${data?.roomId ?? "live"}`,
+          });
+          return;
+        }
+        new Notification("APP TDC — Streamer ao vivo!", {
+          body: "Toque para assistir agora no TikTok.",
+          icon: "/app-icon.png",
+        });
+      } catch {}
+    })();
   }, [isLive, notifications, notifyPerm, data?.roomId]);
 
   const toggleNotifications = async () => {
     const next = !notifications;
     setNotifications(next);
-    if (next && notifyPerm === "default" && typeof window !== "undefined" && "Notification" in window) {
-      const perm = await Notification.requestPermission();
-      setNotifyPerm(perm);
+    if (next && typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        const perm = await Notification.requestPermission();
+        setNotifyPerm(perm);
+      } else {
+        setNotifyPerm(Notification.permission);
+      }
     }
   };
 
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
+      {showSplash && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black animate-fade-out">
+          <img
+            src={tdcLogo}
+            alt="APP TDC"
+            className="w-48 h-48 object-contain drop-shadow-[0_0_40px_rgba(255,140,0,0.6)] animate-pulse"
+          />
+        </div>
+      )}
       <main className="w-full max-w-sm px-5 pt-6 pb-28 flex flex-col gap-4">
         {/* Header */}
         <header className="flex items-center justify-between">
@@ -135,19 +210,26 @@ function Index() {
           <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
             <Bell className="h-4 w-4 text-primary" />
           </span>
-          <p className="flex-1 text-sm font-semibold">Notificações</p>
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Notificações</p>
+            {notifyPerm === "denied" && (
+              <p className="text-[11px] text-muted-foreground">
+                Permissão bloqueada nas configurações do navegador
+              </p>
+            )}
+          </div>
           <button
             onClick={toggleNotifications}
             className="flex items-center gap-2"
-            aria-pressed={notifications}
+            aria-pressed={notifications && notifyPerm === "granted"}
           >
             <span
               className={`h-2.5 w-2.5 rounded-full ${
-                notifications ? "bg-emerald-400" : "bg-muted-foreground/50"
+                notifications && notifyPerm === "granted" ? "bg-emerald-400" : "bg-muted-foreground/50"
               }`}
             />
             <span className="text-xs text-muted-foreground">
-              {notifications ? "Ativadas" : "Desativadas"}
+              {notifications && notifyPerm === "granted" ? "Ativadas" : "Desativadas"}
             </span>
           </button>
         </div>

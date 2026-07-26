@@ -142,3 +142,12 @@
     color: var(--color-foreground);
   }
 }
+
+@keyframes tdc-fade-out {
+  0%, 60% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+.animate-fade-out {
+  animation: tdc-fade-out 1.8s ease-in forwards;
+}

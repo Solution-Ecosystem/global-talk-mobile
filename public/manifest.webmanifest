@@ -1,7 +1,7 @@
 {
-  "name": "Caiquevieira_ — Notify",
-  "short_name": "Caiquevieira_",
-  "description": "Notificações de live do Caiquevieira_ no TikTok, chat, presentes, moedas e redes sociais.",
+  "name": "APP TDC",
+  "short_name": "APP TDC",
+  "description": "Receba notificações quando o streamer estiver ao vivo no TikTok.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
