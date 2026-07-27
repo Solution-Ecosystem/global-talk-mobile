@@ -38,10 +38,17 @@ const STREAMER = {
 
 function Index() {
   const [notifications, setNotifications] = useState(true);
-  const [notifyPerm, setNotifyPerm] = useState<NotificationPermission | "unsupported">(
-    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
-  );
+  const [notifyPerm, setNotifyPerm] = useState<NotificationPermission | "unsupported">("unsupported");
   const [showSplash, setShowSplash] = useState(true);
+
+  // Detecta permissão apenas no cliente (evita hydration mismatch)
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    setNotifyPerm(Notification.permission);
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then((p) => setNotifyPerm(p)).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setShowSplash(false), 1800);
