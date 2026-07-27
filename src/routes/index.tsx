@@ -111,24 +111,28 @@ function Index() {
   useEffect(() => {
     if (!notifications || notifyPerm !== "granted" || !isLive) return;
     const key = `notified:${STREAMER.username}:${data?.roomId ?? "live"}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
+    if (typeof localStorage !== "undefined" && localStorage.getItem(key)) return;
+    try {
+      localStorage.setItem(key, "1");
+    } catch {}
     (async () => {
+      const title = "APP TDC — Caique está ao vivo!";
+      const body = "Toque para assistir agora no TikTok.";
       try {
         if ("serviceWorker" in navigator) {
           const reg = await navigator.serviceWorker.ready;
-          await reg.showNotification("APP TDC — Streamer ao vivo!", {
-            body: "Toque para assistir agora no TikTok.",
+          await reg.showNotification(title, {
+            body,
             icon: "/app-icon.png",
             badge: "/app-icon.png",
             tag: `tdc-live-${data?.roomId ?? "live"}`,
+            data: { url: STREAMER.liveUrl },
           });
           return;
         }
-        new Notification("APP TDC — Streamer ao vivo!", {
-          body: "Toque para assistir agora no TikTok.",
-          icon: "/app-icon.png",
-        });
+      } catch {}
+      try {
+        new Notification(title, { body, icon: "/app-icon.png" });
       } catch {}
     })();
   }, [isLive, notifications, notifyPerm, data?.roomId]);
