@@ -55,12 +55,11 @@ function Index() {
     return () => clearTimeout(t);
   }, []);
 
-  // Registra o service worker que faz o polling do status da live
-  // mesmo quando o app está em segundo plano / instalado na tela inicial.
+  // Registra o service worker e assina Web Push nativo (VAPID).
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    if (notifyPerm !== "granted") return;
     let cancelled = false;
-    let interval: ReturnType<typeof setInterval> | null = null;
 
     (async () => {
       try {
@@ -68,35 +67,39 @@ function Index() {
         if (cancelled) return;
         await navigator.serviceWorker.ready;
 
-        // Tenta registrar Periodic Background Sync (Chrome Android instalado)
-        try {
-          // @ts-expect-error periodicSync is not in TS lib
-          if (reg.periodicSync) {
-            // @ts-expect-error
-            const status = await navigator.permissions.query({ name: "periodic-background-sync" });
-            if (status.state === "granted") {
-              // @ts-expect-error
-              await reg.periodicSync.register("tdc-live-check", {
-                minInterval: 15 * 60 * 1000, // 15 min
-              });
-            }
-          }
-        } catch {}
+        if (!("PushManager" in window)) return;
 
-        // Fallback: pinga o SW enquanto a página estiver aberta
-        const ping = () => navigator.serviceWorker.controller?.postMessage("check-live");
-        ping();
-        interval = setInterval(ping, 60_000);
+        // Busca a VAPID public key do backend
+        const res = await fetch("/api/public/push/subscribe");
+        const { vapidPublicKey } = (await res.json()) as { vapidPublicKey: string | null };
+        if (!vapidPublicKey) return;
+
+        const existing = await reg.pushManager.getSubscription();
+        const sub =
+          existing ??
+          (await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+          }));
+
+        const json = sub.toJSON();
+        await fetch("/api/public/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            endpoint: json.endpoint,
+            keys: json.keys,
+          }),
+        });
       } catch (err) {
-        console.warn("SW register falhou", err);
+        console.warn("Push subscribe falhou", err);
       }
     })();
 
     return () => {
       cancelled = true;
-      if (interval) clearInterval(interval);
     };
-  }, []);
+  }, [notifyPerm]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["tiktok-live", STREAMER.username],

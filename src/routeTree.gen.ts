@@ -10,33 +10,57 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicPushSubscribeRouteImport } from './routes/api/public/push/subscribe'
+import { Route as ApiPublicHooksCheckLiveRouteImport } from './routes/api/public/hooks/check-live'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPushSubscribeRoute = ApiPublicPushSubscribeRouteImport.update({
+  id: '/api/public/push/subscribe',
+  path: '/api/public/push/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksCheckLiveRoute = ApiPublicHooksCheckLiveRouteImport.update({
+  id: '/api/public/hooks/check-live',
+  path: '/api/public/hooks/check-live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
+  '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
+  '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
+  '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/public/hooks/check-live' | '/api/public/push/subscribe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/public/hooks/check-live' | '/api/public/push/subscribe'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/public/hooks/check-live'
+    | '/api/public/push/subscribe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiPublicHooksCheckLiveRoute: typeof ApiPublicHooksCheckLiveRoute
+  ApiPublicPushSubscribeRoute: typeof ApiPublicPushSubscribeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +72,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/push/subscribe': {
+      id: '/api/public/push/subscribe'
+      path: '/api/public/push/subscribe'
+      fullPath: '/api/public/push/subscribe'
+      preLoaderRoute: typeof ApiPublicPushSubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/check-live': {
+      id: '/api/public/hooks/check-live'
+      path: '/api/public/hooks/check-live'
+      fullPath: '/api/public/hooks/check-live'
+      preLoaderRoute: typeof ApiPublicHooksCheckLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiPublicHooksCheckLiveRoute: ApiPublicHooksCheckLiveRoute,
+  ApiPublicPushSubscribeRoute: ApiPublicPushSubscribeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
