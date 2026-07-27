@@ -14,7 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      live_state: {
+        Row: {
+          id: number
+          is_live: boolean
+          last_notified_room_id: string | null
+          room_id: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          is_live?: boolean
+          last_notified_room_id?: string | null
+          room_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          is_live?: boolean
+          last_notified_room_id?: string | null
+          room_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_seen_at: string
+          p256dh: string
+          user_agent: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_seen_at?: string
+          p256dh: string
+          user_agent?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_seen_at?: string
+          p256dh?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
