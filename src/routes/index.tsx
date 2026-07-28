@@ -40,12 +40,27 @@ function Index() {
   const [notifications, setNotifications] = useState(true);
   const [notifyPerm, setNotifyPerm] = useState<NotificationPermission | "unsupported">("unsupported");
   const [showSplash, setShowSplash] = useState(true);
+  const [socialOpen, setSocialOpen] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(true);
+  const [pushReady, setPushReady] = useState(false);
 
-  // Detecta permissão apenas no cliente (evita hydration mismatch)
+  // Detecta permissão e ambiente apenas no cliente (evita hydration mismatch)
   useEffect(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (typeof window === "undefined") return;
+    const ua = navigator.userAgent || "";
+    const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && "ontouchend" in document);
+    const standalone =
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      // @ts-expect-error propriedade só existe no Safari iOS
+      window.navigator.standalone === true;
+    setIsIOS(ios);
+    setIsStandalone(!!standalone);
+
+    if (!("Notification" in window)) return;
     setNotifyPerm(Notification.permission);
-    if (Notification.permission === "default") {
+    // Safari/iOS exige gesto do usuário: só pedimos automaticamente fora do iOS.
+    if (!ios && Notification.permission === "default") {
       Notification.requestPermission().then((p) => setNotifyPerm(p)).catch(() => {});
     }
   }, []);
@@ -63,7 +78,9 @@ function Index() {
 
     (async () => {
       try {
-        const reg = await navigator.serviceWorker.register("/sw.js");
+        const reg =
+          (await navigator.serviceWorker.getRegistration("/sw.js")) ??
+          (await navigator.serviceWorker.register("/sw.js"));
         if (cancelled) return;
         await navigator.serviceWorker.ready;
 
@@ -91,6 +108,7 @@ function Index() {
             keys: json.keys,
           }),
         });
+        if (!cancelled) setPushReady(true);
       } catch (err) {
         console.warn("Push subscribe falhou", err);
       }
@@ -141,17 +159,22 @@ function Index() {
   }, [isLive, notifications, notifyPerm, data?.roomId]);
 
   const toggleNotifications = async () => {
-    const next = !notifications;
-    setNotifications(next);
-    if (next && typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") {
-        const perm = await Notification.requestPermission();
-        setNotifyPerm(perm);
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission !== "granted") {
+        // Precisa acontecer dentro do gesto do usuário (obrigatório no Safari/iOS)
+        try {
+          const perm = await Notification.requestPermission();
+          setNotifyPerm(perm);
+          setNotifications(perm === "granted");
+          return;
+        } catch {}
       } else {
-        setNotifyPerm(Notification.permission);
+        setNotifyPerm("granted");
       }
     }
+    setNotifications((v) => !v);
   };
+
 
 
   return (
