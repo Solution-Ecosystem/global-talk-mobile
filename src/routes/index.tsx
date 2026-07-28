@@ -254,6 +254,9 @@ function Index() {
                 Permissão bloqueada nas configurações do navegador
               </p>
             )}
+            {notifyPerm === "granted" && pushReady && (
+              <p className="text-[11px] text-muted-foreground">Push ativo neste dispositivo</p>
+            )}
           </div>
           <button
             onClick={toggleNotifications}
@@ -270,6 +273,27 @@ function Index() {
             </span>
           </button>
         </div>
+
+        {/* Aviso iPhone/Safari: push só funciona com o app na tela de início */}
+        {isIOS && !isStandalone && (
+          <div className="rounded-2xl bg-card px-4 py-3.5">
+            <p className="text-sm font-semibold">Ative as notificações no iPhone</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              No Safari, toque em <strong>Compartilhar</strong> → <strong>Adicionar à Tela de Início</strong>,
+              abra o APP TDC pelo ícone e toque em <strong>Notificações</strong> aqui para permitir. A Apple
+              só permite push em apps instalados na tela de início.
+            </p>
+          </div>
+        )}
+        {isIOS && isStandalone && notifyPerm !== "granted" && (
+          <button
+            onClick={toggleNotifications}
+            className="rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground"
+          >
+            Permitir notificações da live
+          </button>
+        )}
+
 
         {/* Grid cards */}
         <div className="grid grid-cols-2 gap-3">
