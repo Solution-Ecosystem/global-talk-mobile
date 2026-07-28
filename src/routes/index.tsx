@@ -446,3 +446,19 @@ function GridCard({
     </a>
   );
 }
+
+function SocialRow({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-3 rounded-2xl bg-card px-4 py-4 hover:bg-accent transition"
+    >
+      <span className="grid h-10 w-10 place-items-center rounded-xl bg-background/60 text-foreground">
+        {icon}
+      </span>
+      <span className="text-sm font-semibold">{label}</span>
+    </a>
+  );
+}
