@@ -15,6 +15,8 @@ import {
   Instagram,
   Youtube,
   Radio,
+  X,
+
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
 import tdcLogo from "@/assets/tdc-logo.png";
