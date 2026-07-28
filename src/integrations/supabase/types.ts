@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      gift_items: {
+        Row: {
+          created_at: string
+          gallery: string
+          id: string
+          lit: boolean
+          name: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          gallery: string
+          id?: string
+          lit?: boolean
+          name: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          gallery?: string
+          id?: string
+          lit?: boolean
+          name?: string
+          position?: number
+        }
+        Relationships: []
+      }
+      gift_state: {
+        Row: {
+          current_gallery: string
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          current_gallery?: string
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          current_gallery?: string
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       live_state: {
         Row: {
           id: number
