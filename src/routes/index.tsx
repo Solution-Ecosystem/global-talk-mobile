@@ -303,12 +303,19 @@ function Index() {
             title="Chat"
             subtitle="Grupo exclusivo"
           />
-          <GridCard
-            href={STREAMER.galleryUrl}
-            icon={<ImageIcon className="h-6 w-6" />}
-            title="Galeria"
-            subtitle="Galeria TikTok"
-          />
+          <Link
+            to="/galeria"
+            className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card px-4 py-6 hover:bg-accent transition"
+          >
+            <span className="grid h-14 w-14 place-items-center rounded-full bg-background/60 text-foreground">
+              <ImageIcon className="h-6 w-6" />
+            </span>
+            <p className="text-sm font-semibold">Galeria</p>
+            <p className="text-[11px] text-muted-foreground text-center leading-tight">
+              Presentes iluminados
+            </p>
+          </Link>
+
           <GridCard
             href={STREAMER.coinsUrl}
             icon={<Coins className="h-6 w-6" />}
