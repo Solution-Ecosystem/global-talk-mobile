@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -15,6 +15,8 @@ import {
   Instagram,
   Youtube,
   Radio,
+  X,
+
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
 import tdcLogo from "@/assets/tdc-logo.png";
@@ -40,12 +42,27 @@ function Index() {
   const [notifications, setNotifications] = useState(true);
   const [notifyPerm, setNotifyPerm] = useState<NotificationPermission | "unsupported">("unsupported");
   const [showSplash, setShowSplash] = useState(true);
+  const [socialOpen, setSocialOpen] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(true);
+  const [pushReady, setPushReady] = useState(false);
 
-  // Detecta permissão apenas no cliente (evita hydration mismatch)
+  // Detecta permissão e ambiente apenas no cliente (evita hydration mismatch)
   useEffect(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (typeof window === "undefined") return;
+    const ua = navigator.userAgent || "";
+    const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && "ontouchend" in document);
+    const standalone =
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      // @ts-expect-error propriedade só existe no Safari iOS
+      window.navigator.standalone === true;
+    setIsIOS(ios);
+    setIsStandalone(!!standalone);
+
+    if (!("Notification" in window)) return;
     setNotifyPerm(Notification.permission);
-    if (Notification.permission === "default") {
+    // Safari/iOS exige gesto do usuário: só pedimos automaticamente fora do iOS.
+    if (!ios && Notification.permission === "default") {
       Notification.requestPermission().then((p) => setNotifyPerm(p)).catch(() => {});
     }
   }, []);
@@ -63,7 +80,9 @@ function Index() {
 
     (async () => {
       try {
-        const reg = await navigator.serviceWorker.register("/sw.js");
+        const reg =
+          (await navigator.serviceWorker.getRegistration("/sw.js")) ??
+          (await navigator.serviceWorker.register("/sw.js"));
         if (cancelled) return;
         await navigator.serviceWorker.ready;
 
@@ -91,6 +110,7 @@ function Index() {
             keys: json.keys,
           }),
         });
+        if (!cancelled) setPushReady(true);
       } catch (err) {
         console.warn("Push subscribe falhou", err);
       }
@@ -141,17 +161,22 @@ function Index() {
   }, [isLive, notifications, notifyPerm, data?.roomId]);
 
   const toggleNotifications = async () => {
-    const next = !notifications;
-    setNotifications(next);
-    if (next && typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") {
-        const perm = await Notification.requestPermission();
-        setNotifyPerm(perm);
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission !== "granted") {
+        // Precisa acontecer dentro do gesto do usuário (obrigatório no Safari/iOS)
+        try {
+          const perm = await Notification.requestPermission();
+          setNotifyPerm(perm);
+          setNotifications(perm === "granted");
+          return;
+        } catch {}
       } else {
-        setNotifyPerm(Notification.permission);
+        setNotifyPerm("granted");
       }
     }
+    setNotifications((v) => !v);
   };
+
 
 
   return (
@@ -231,6 +256,9 @@ function Index() {
                 Permissão bloqueada nas configurações do navegador
               </p>
             )}
+            {notifyPerm === "granted" && pushReady && (
+              <p className="text-[11px] text-muted-foreground">Push ativo neste dispositivo</p>
+            )}
           </div>
           <button
             onClick={toggleNotifications}
@@ -248,6 +276,27 @@ function Index() {
           </button>
         </div>
 
+        {/* Aviso iPhone/Safari: push só funciona com o app na tela de início */}
+        {isIOS && !isStandalone && (
+          <div className="rounded-2xl bg-card px-4 py-3.5">
+            <p className="text-sm font-semibold">Ative as notificações no iPhone</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              No Safari, toque em <strong>Compartilhar</strong> → <strong>Adicionar à Tela de Início</strong>,
+              abra o APP TDC pelo ícone e toque em <strong>Notificações</strong> aqui para permitir. A Apple
+              só permite push em apps instalados na tela de início.
+            </p>
+          </div>
+        )}
+        {isIOS && isStandalone && notifyPerm !== "granted" && (
+          <button
+            onClick={toggleNotifications}
+            className="rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground"
+          >
+            Permitir notificações da live
+          </button>
+        )}
+
+
         {/* Grid cards */}
         <div className="grid grid-cols-2 gap-3">
           <GridCard
@@ -256,12 +305,19 @@ function Index() {
             title="Chat"
             subtitle="Grupo exclusivo"
           />
-          <GridCard
-            href={STREAMER.galleryUrl}
-            icon={<ImageIcon className="h-6 w-6" />}
-            title="Galeria"
-            subtitle="Galeria TikTok"
-          />
+          <Link
+            to="/galeria"
+            className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card px-4 py-6 hover:bg-accent transition"
+          >
+            <span className="grid h-14 w-14 place-items-center rounded-full bg-background/60 text-foreground">
+              <ImageIcon className="h-6 w-6" />
+            </span>
+            <p className="text-sm font-semibold">Galeria</p>
+            <p className="text-[11px] text-muted-foreground text-center leading-tight">
+              Presentes iluminados
+            </p>
+          </Link>
+
           <GridCard
             href={STREAMER.coinsUrl}
             icon={<Coins className="h-6 w-6" />}
@@ -277,26 +333,59 @@ function Index() {
         </div>
 
         {/* Redes sociais */}
-        <div className="rounded-2xl bg-card px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
-              <Share2 className="h-4 w-4 text-primary" />
-            </span>
-            <p className="flex-1 text-sm font-semibold">Redes Sociais</p>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <a href={STREAMER.tiktok} target="_blank" rel="noreferrer" aria-label="TikTok" className="hover:text-foreground">
-                <Music2 className="h-4 w-4" />
-              </a>
-              <a href={STREAMER.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-foreground">
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a href={STREAMER.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-foreground">
-                <Youtube className="h-4 w-4" />
-              </a>
+        <button
+          onClick={() => setSocialOpen(true)}
+          className="flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-3.5 text-left hover:bg-accent transition"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
+            <Share2 className="h-4 w-4 text-primary" />
+          </span>
+          <p className="flex-1 text-sm font-semibold">Redes Sociais</p>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </button>
+      </main>
+
+      {/* Sheet de redes sociais */}
+      {socialOpen && (
+        <div
+          className="fixed inset-0 z-40 flex items-end justify-center bg-black/60"
+          onClick={() => setSocialOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-sm rounded-t-3xl bg-secondary p-4 pb-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-end">
+              <button
+                aria-label="Fechar"
+                onClick={() => setSocialOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full bg-background/40 text-foreground"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-2 flex flex-col gap-3">
+              <SocialRow
+                href={STREAMER.tiktok}
+                icon={<Music2 className="h-5 w-5" />}
+                label="TikTok"
+              />
+              <SocialRow
+                href={STREAMER.instagram}
+                icon={<Instagram className="h-5 w-5" />}
+                label="Instagram"
+              />
+              <SocialRow
+                href={STREAMER.youtube}
+                icon={<Youtube className="h-5 w-5" />}
+                label="Youtube"
+              />
             </div>
           </div>
         </div>
-      </main>
+      )}
+
 
       {/* Bottom nav fixa */}
       <nav
@@ -354,6 +443,22 @@ function GridCard({
       </span>
       <p className="text-sm font-semibold">{title}</p>
       <p className="text-[11px] text-muted-foreground text-center leading-tight">{subtitle}</p>
+    </a>
+  );
+}
+
+function SocialRow({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-3 rounded-2xl bg-card px-4 py-4 hover:bg-accent transition"
+    >
+      <span className="grid h-10 w-10 place-items-center rounded-xl bg-background/60 text-foreground">
+        {icon}
+      </span>
+      <span className="text-sm font-semibold">{label}</span>
     </a>
   );
 }
