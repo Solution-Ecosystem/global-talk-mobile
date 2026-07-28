@@ -331,26 +331,59 @@ function Index() {
         </div>
 
         {/* Redes sociais */}
-        <div className="rounded-2xl bg-card px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
-              <Share2 className="h-4 w-4 text-primary" />
-            </span>
-            <p className="flex-1 text-sm font-semibold">Redes Sociais</p>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <a href={STREAMER.tiktok} target="_blank" rel="noreferrer" aria-label="TikTok" className="hover:text-foreground">
-                <Music2 className="h-4 w-4" />
-              </a>
-              <a href={STREAMER.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-foreground">
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a href={STREAMER.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-foreground">
-                <Youtube className="h-4 w-4" />
-              </a>
+        <button
+          onClick={() => setSocialOpen(true)}
+          className="flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-3.5 text-left hover:bg-accent transition"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
+            <Share2 className="h-4 w-4 text-primary" />
+          </span>
+          <p className="flex-1 text-sm font-semibold">Redes Sociais</p>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </button>
+      </main>
+
+      {/* Sheet de redes sociais */}
+      {socialOpen && (
+        <div
+          className="fixed inset-0 z-40 flex items-end justify-center bg-black/60"
+          onClick={() => setSocialOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-sm rounded-t-3xl bg-secondary p-4 pb-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-end">
+              <button
+                aria-label="Fechar"
+                onClick={() => setSocialOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full bg-background/40 text-foreground"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-2 flex flex-col gap-3">
+              <SocialRow
+                href={STREAMER.tiktok}
+                icon={<Music2 className="h-5 w-5" />}
+                label="TikTok"
+              />
+              <SocialRow
+                href={STREAMER.instagram}
+                icon={<Instagram className="h-5 w-5" />}
+                label="Instagram"
+              />
+              <SocialRow
+                href={STREAMER.youtube}
+                icon={<Youtube className="h-5 w-5" />}
+                label="Youtube"
+              />
             </div>
           </div>
         </div>
-      </main>
+      )}
+
 
       {/* Bottom nav fixa */}
       <nav
