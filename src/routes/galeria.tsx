@@ -185,7 +185,11 @@ function GaleriaPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{item.name}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {item.lit ? "Iluminado" : "Falta iluminar"}
+                  {item.lit
+                    ? "Iluminado"
+                    : item.remaining > 0
+                      ? `Faltam ${item.remaining} para iluminar`
+                      : "Falta iluminar"}
                   {item.coins > 0 && ` · ${item.coins.toLocaleString("pt-BR")} moedas`}
                 </p>
               </div>
