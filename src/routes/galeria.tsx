@@ -67,7 +67,28 @@ function GaleriaPage() {
     },
   });
 
+  const [syncMsg, setSyncMsg] = useState("");
+  const sync = useMutation({
+    mutationFn: () => syncGiftsFromTikTok({ data: { pin } }),
+    onSuccess: (res) => {
+      if (!res.ok) {
+        setSyncMsg(
+          res.error === "pin_incorreto"
+            ? "PIN incorreto"
+            : res.error === "sem_sala_ativa"
+              ? "Não foi possível ler os presentes agora (sala do TikTok indisponível)."
+              : `Falha ao sincronizar: ${res.error}`,
+        );
+        return;
+      }
+      setSyncMsg(`${res.imported} presentes sincronizados do TikTok.`);
+      qc.invalidateQueries({ queryKey: ["gifts"] });
+    },
+    onError: () => setSyncMsg("Falha ao sincronizar com o TikTok."),
+  });
+
   const isAdmin = adminOpen && pin.length >= 3 && !pinError;
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
