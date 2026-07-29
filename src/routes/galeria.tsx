@@ -288,17 +288,17 @@ function GaleriaPage() {
                   setSyncMsg("");
                   sync.mutate();
                 }}
-                disabled={sync.isPending || pin.length < 3}
+                disabled={sync.isPending}
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
               >
                 <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} />
-                {sync.isPending ? "Sincronizando..." : "Sincronizar presentes do TikTok"}
+                {sync.isPending ? "Sincronizando..." : "Atualizar galeria agora"}
               </button>
               {syncMsg && <p className="text-[11px] text-muted-foreground">{syncMsg}</p>}
               <p className="text-[11px] text-muted-foreground">
-                A sincronização importa a lista real de presentes da live e separa por galeria
-                (D, C, B, A) pelo valor em moedas. O TikTok não divulga publicamente quais já
-                foram iluminados, então essa marcação é feita aqui pelo administrador.
+                A galeria é lida direto da live do TikTok (liga do streamer e quantos presentes
+                ainda faltam para iluminar cada item) e se atualiza sozinha a cada 1 minuto
+                enquanto a live estiver no ar.
               </p>
 
             </div>
