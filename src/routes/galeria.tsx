@@ -255,9 +255,24 @@ function GaleriaPage() {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
+              <button
+                onClick={() => {
+                  setSyncMsg("");
+                  sync.mutate();
+                }}
+                disabled={sync.isPending || pin.length < 3}
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} />
+                {sync.isPending ? "Sincronizando..." : "Sincronizar presentes do TikTok"}
+              </button>
+              {syncMsg && <p className="text-[11px] text-muted-foreground">{syncMsg}</p>}
               <p className="text-[11px] text-muted-foreground">
-                Digite o PIN para liberar os botões de iluminar, adicionar e remover presentes.
+                A sincronização importa a lista real de presentes da live e separa por galeria
+                (D, C, B, A) pelo valor em moedas. O TikTok não divulga publicamente quais já
+                foram iluminados, então essa marcação é feita aqui pelo administrador.
               </p>
+
             </div>
           )}
         </div>
