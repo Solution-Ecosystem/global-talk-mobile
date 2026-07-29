@@ -143,18 +143,29 @@ function GaleriaPage() {
               }`}
             >
               <span
-                className={`grid h-9 w-9 place-items-center rounded-full ${
+                className={`grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full ${
                   item.lit ? "bg-primary/25 text-primary" : "bg-background/60 text-muted-foreground"
                 }`}
               >
-                <Gift className="h-4 w-4" />
+                {item.icon_url ? (
+                  <img
+                    src={item.icon_url}
+                    alt={item.name}
+                    loading="lazy"
+                    className={`h-7 w-7 object-contain ${item.lit ? "" : "opacity-50 grayscale"}`}
+                  />
+                ) : (
+                  <Gift className="h-4 w-4" />
+                )}
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{item.name}</p>
                 <p className="text-[11px] text-muted-foreground">
                   {item.lit ? "Iluminado" : "Falta iluminar"}
+                  {item.coins > 0 && ` · ${item.coins.toLocaleString("pt-BR")} moedas`}
                 </p>
               </div>
+
               {isAdmin && (
                 <div className="flex items-center gap-2">
                   <button
