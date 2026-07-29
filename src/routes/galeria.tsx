@@ -1,8 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gift, Sparkles, Lock, Plus, Trash2 } from "lucide-react";
-import { getGifts, updateGifts, type GiftItem } from "@/lib/gifts.functions";
+import { ArrowLeft, Gift, Sparkles, Lock, Plus, Trash2, RefreshCw } from "lucide-react";
+import {
+  getGifts,
+  updateGifts,
+  syncGiftsFromTikTok,
+  type GiftItem,
+} from "@/lib/gifts.functions";
+
 
 export const Route = createFileRoute("/galeria")({
   head: () => ({
@@ -61,7 +67,28 @@ function GaleriaPage() {
     },
   });
 
+  const [syncMsg, setSyncMsg] = useState("");
+  const sync = useMutation({
+    mutationFn: () => syncGiftsFromTikTok({ data: { pin } }),
+    onSuccess: (res) => {
+      if (!res.ok) {
+        setSyncMsg(
+          res.error === "pin_incorreto"
+            ? "PIN incorreto"
+            : res.error === "sem_sala_ativa"
+              ? "Não foi possível ler os presentes agora (sala do TikTok indisponível)."
+              : `Falha ao sincronizar: ${res.error}`,
+        );
+        return;
+      }
+      setSyncMsg(`${res.imported} presentes sincronizados do TikTok.`);
+      qc.invalidateQueries({ queryKey: ["gifts"] });
+    },
+    onError: () => setSyncMsg("Falha ao sincronizar com o TikTok."),
+  });
+
   const isAdmin = adminOpen && pin.length >= 3 && !pinError;
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
@@ -116,18 +143,29 @@ function GaleriaPage() {
               }`}
             >
               <span
-                className={`grid h-9 w-9 place-items-center rounded-full ${
+                className={`grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full ${
                   item.lit ? "bg-primary/25 text-primary" : "bg-background/60 text-muted-foreground"
                 }`}
               >
-                <Gift className="h-4 w-4" />
+                {item.icon_url ? (
+                  <img
+                    src={item.icon_url}
+                    alt={item.name}
+                    loading="lazy"
+                    className={`h-7 w-7 object-contain ${item.lit ? "" : "opacity-50 grayscale"}`}
+                  />
+                ) : (
+                  <Gift className="h-4 w-4" />
+                )}
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{item.name}</p>
                 <p className="text-[11px] text-muted-foreground">
                   {item.lit ? "Iluminado" : "Falta iluminar"}
+                  {item.coins > 0 && ` · ${item.coins.toLocaleString("pt-BR")} moedas`}
                 </p>
               </div>
+
               {isAdmin && (
                 <div className="flex items-center gap-2">
                   <button
@@ -217,9 +255,24 @@ function GaleriaPage() {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
+              <button
+                onClick={() => {
+                  setSyncMsg("");
+                  sync.mutate();
+                }}
+                disabled={sync.isPending || pin.length < 3}
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} />
+                {sync.isPending ? "Sincronizando..." : "Sincronizar presentes do TikTok"}
+              </button>
+              {syncMsg && <p className="text-[11px] text-muted-foreground">{syncMsg}</p>}
               <p className="text-[11px] text-muted-foreground">
-                Digite o PIN para liberar os botões de iluminar, adicionar e remover presentes.
+                A sincronização importa a lista real de presentes da live e separa por galeria
+                (D, C, B, A) pelo valor em moedas. O TikTok não divulga publicamente quais já
+                foram iluminados, então essa marcação é feita aqui pelo administrador.
               </p>
+
             </div>
           )}
         </div>

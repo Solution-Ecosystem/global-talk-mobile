@@ -16,28 +16,37 @@ export type Database = {
     Tables: {
       gift_items: {
         Row: {
+          coins: number
           created_at: string
           gallery: string
+          icon_url: string | null
           id: string
           lit: boolean
           name: string
           position: number
+          tiktok_gift_id: string | null
         }
         Insert: {
+          coins?: number
           created_at?: string
           gallery: string
+          icon_url?: string | null
           id?: string
           lit?: boolean
           name: string
           position?: number
+          tiktok_gift_id?: string | null
         }
         Update: {
+          coins?: number
           created_at?: string
           gallery?: string
+          icon_url?: string | null
           id?: string
           lit?: boolean
           name?: string
           position?: number
+          tiktok_gift_id?: string | null
         }
         Relationships: []
       }
