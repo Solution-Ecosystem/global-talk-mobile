@@ -1,8 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gift, Sparkles, Lock, Plus, Trash2 } from "lucide-react";
-import { getGifts, updateGifts, type GiftItem } from "@/lib/gifts.functions";
+import { ArrowLeft, Gift, Sparkles, Lock, Plus, Trash2, RefreshCw } from "lucide-react";
+import {
+  getGifts,
+  updateGifts,
+  syncGiftsFromTikTok,
+  type GiftItem,
+} from "@/lib/gifts.functions";
+
 
 export const Route = createFileRoute("/galeria")({
   head: () => ({
