@@ -129,9 +129,13 @@ function GaleriaPage() {
             <Sparkles className="h-4 w-4 text-primary" />
           </span>
           <div className="flex-1">
-            <p className="text-sm font-semibold">Galeria atual: {current}</p>
+            <p className="text-sm font-semibold">
+              Galeria atual: {current}
+              {league && <span className="ml-1 text-xs text-muted-foreground">(liga {league})</span>}
+            </p>
             <p className="text-xs text-muted-foreground">
               Presentes iluminados nesta galeria: {lit}/{items.length}
+              {autoSync.isFetching && " · atualizando..."}
             </p>
           </div>
         </div>
