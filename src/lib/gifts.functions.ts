@@ -11,6 +11,8 @@ export type GiftItem = {
   coins: number;
   icon_url: string | null;
   tiktok_gift_id: string | null;
+  remaining: number;
+  is_gallery: boolean;
 };
 
 export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
@@ -18,14 +20,18 @@ export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
   const [{ data: items }, { data: state }] = await Promise.all([
     supabaseAdmin
       .from("gift_items")
-      .select("id, gallery, name, lit, position, coins, icon_url, tiktok_gift_id")
+      .select(
+        "id, gallery, name, lit, position, coins, icon_url, tiktok_gift_id, remaining, is_gallery",
+      )
       .order("gallery", { ascending: true })
       .order("position", { ascending: true }),
-    supabaseAdmin.from("gift_state").select("current_gallery").eq("id", 1).single(),
+    supabaseAdmin.from("gift_state").select("current_gallery, league, updated_at").eq("id", 1).single(),
   ]);
   return {
     items: (items ?? []) as GiftItem[],
     currentGallery: (state?.current_gallery ?? "D") as Gallery,
+    league: (state?.league ?? null) as string | null,
+    updatedAt: state?.updated_at ?? null,
   };
 });
 
