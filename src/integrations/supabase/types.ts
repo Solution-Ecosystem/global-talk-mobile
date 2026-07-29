@@ -21,9 +21,11 @@ export type Database = {
           gallery: string
           icon_url: string | null
           id: string
+          is_gallery: boolean
           lit: boolean
           name: string
           position: number
+          remaining: number
           tiktok_gift_id: string | null
         }
         Insert: {
@@ -32,9 +34,11 @@ export type Database = {
           gallery: string
           icon_url?: string | null
           id?: string
+          is_gallery?: boolean
           lit?: boolean
           name: string
           position?: number
+          remaining?: number
           tiktok_gift_id?: string | null
         }
         Update: {
@@ -43,9 +47,11 @@ export type Database = {
           gallery?: string
           icon_url?: string | null
           id?: string
+          is_gallery?: boolean
           lit?: boolean
           name?: string
           position?: number
+          remaining?: number
           tiktok_gift_id?: string | null
         }
         Relationships: []
@@ -54,16 +60,19 @@ export type Database = {
         Row: {
           current_gallery: string
           id: number
+          league: string | null
           updated_at: string
         }
         Insert: {
           current_gallery?: string
           id?: number
+          league?: string | null
           updated_at?: string
         }
         Update: {
           current_gallery?: string
           id?: number
+          league?: string | null
           updated_at?: string
         }
         Relationships: []

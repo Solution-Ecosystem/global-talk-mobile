@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Gift, Sparkles, Lock, Plus, Trash2, RefreshCw } from "lucide-react";
 import {
@@ -40,6 +40,21 @@ function GaleriaPage() {
     queryFn: () => getGifts(),
     refetchInterval: 60_000,
   });
+
+  // Sincroniza automaticamente com a galeria real da live do TikTok
+  const autoSync = useQuery({
+    queryKey: ["gift-sync"],
+    queryFn: () => syncGiftsFromTikTok({ data: {} }),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    if (autoSync.data?.ok) {
+      qc.invalidateQueries({ queryKey: ["gifts"] });
+    }
+  }, [autoSync.data, qc]);
+
   const [tab, setTab] = useState<(typeof GALLERIES)[number] | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
   const [pin, setPin] = useState("");
@@ -47,6 +62,7 @@ function GaleriaPage() {
   const [newGift, setNewGift] = useState("");
 
   const current = data?.currentGallery ?? "D";
+  const league = data?.league ?? null;
   const active = tab ?? current;
   const items = useMemo(
     () => (data?.items ?? []).filter((i) => i.gallery === active),
@@ -69,25 +85,29 @@ function GaleriaPage() {
 
   const [syncMsg, setSyncMsg] = useState("");
   const sync = useMutation({
-    mutationFn: () => syncGiftsFromTikTok({ data: { pin } }),
+    mutationFn: () => syncGiftsFromTikTok({ data: {} }),
     onSuccess: (res) => {
       if (!res.ok) {
         setSyncMsg(
-          res.error === "pin_incorreto"
-            ? "PIN incorreto"
-            : res.error === "sem_sala_ativa"
-              ? "Não foi possível ler os presentes agora (sala do TikTok indisponível)."
+          res.error === "sem_sala_ativa"
+            ? "O streamer não está ao vivo agora, então a galeria não pode ser lida."
+            : res.error === "galeria_indisponivel"
+              ? "A live não expôs a galeria neste momento."
               : `Falha ao sincronizar: ${res.error}`,
         );
         return;
       }
-      setSyncMsg(`${res.imported} presentes sincronizados do TikTok.`);
+      setSyncMsg(
+        `Galeria ${res.gallery}${res.league ? ` (liga ${res.league})` : ""}: ${res.lit}/${res.imported} iluminados.`,
+      );
       qc.invalidateQueries({ queryKey: ["gifts"] });
     },
     onError: () => setSyncMsg("Falha ao sincronizar com o TikTok."),
   });
 
   const isAdmin = adminOpen && pin.length >= 3 && !pinError;
+
+
 
 
   return (
@@ -109,9 +129,13 @@ function GaleriaPage() {
             <Sparkles className="h-4 w-4 text-primary" />
           </span>
           <div className="flex-1">
-            <p className="text-sm font-semibold">Galeria atual: {current}</p>
+            <p className="text-sm font-semibold">
+              Galeria atual: {current}
+              {league && <span className="ml-1 text-xs text-muted-foreground">(liga {league})</span>}
+            </p>
             <p className="text-xs text-muted-foreground">
               Presentes iluminados nesta galeria: {lit}/{items.length}
+              {autoSync.isFetching && " · atualizando..."}
             </p>
           </div>
         </div>
@@ -161,7 +185,11 @@ function GaleriaPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{item.name}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {item.lit ? "Iluminado" : "Falta iluminar"}
+                  {item.lit
+                    ? "Iluminado"
+                    : item.remaining > 0
+                      ? `Faltam ${item.remaining} para iluminar`
+                      : "Falta iluminar"}
                   {item.coins > 0 && ` · ${item.coins.toLocaleString("pt-BR")} moedas`}
                 </p>
               </div>
@@ -260,17 +288,17 @@ function GaleriaPage() {
                   setSyncMsg("");
                   sync.mutate();
                 }}
-                disabled={sync.isPending || pin.length < 3}
+                disabled={sync.isPending}
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
               >
                 <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} />
-                {sync.isPending ? "Sincronizando..." : "Sincronizar presentes do TikTok"}
+                {sync.isPending ? "Sincronizando..." : "Atualizar galeria agora"}
               </button>
               {syncMsg && <p className="text-[11px] text-muted-foreground">{syncMsg}</p>}
               <p className="text-[11px] text-muted-foreground">
-                A sincronização importa a lista real de presentes da live e separa por galeria
-                (D, C, B, A) pelo valor em moedas. O TikTok não divulga publicamente quais já
-                foram iluminados, então essa marcação é feita aqui pelo administrador.
+                A galeria é lida direto da live do TikTok (liga do streamer e quantos presentes
+                ainda faltam para iluminar cada item) e se atualiza sozinha a cada 1 minuto
+                enquanto a live estiver no ar.
               </p>
 
             </div>

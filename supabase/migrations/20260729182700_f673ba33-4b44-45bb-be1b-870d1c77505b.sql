@@ -1,0 +1,1 @@
+DELETE FROM public.gift_items WHERE tiktok_gift_id IS NULL;
