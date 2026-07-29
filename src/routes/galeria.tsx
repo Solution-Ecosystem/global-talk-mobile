@@ -40,6 +40,21 @@ function GaleriaPage() {
     queryFn: () => getGifts(),
     refetchInterval: 60_000,
   });
+
+  // Sincroniza automaticamente com a galeria real da live do TikTok
+  const autoSync = useQuery({
+    queryKey: ["gift-sync"],
+    queryFn: () => syncGiftsFromTikTok({ data: {} }),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    if (autoSync.data?.ok) {
+      qc.invalidateQueries({ queryKey: ["gifts"] });
+    }
+  }, [autoSync.data, qc]);
+
   const [tab, setTab] = useState<(typeof GALLERIES)[number] | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
   const [pin, setPin] = useState("");
@@ -47,6 +62,7 @@ function GaleriaPage() {
   const [newGift, setNewGift] = useState("");
 
   const current = data?.currentGallery ?? "D";
+  const league = data?.league ?? null;
   const active = tab ?? current;
   const items = useMemo(
     () => (data?.items ?? []).filter((i) => i.gallery === active),
@@ -69,25 +85,29 @@ function GaleriaPage() {
 
   const [syncMsg, setSyncMsg] = useState("");
   const sync = useMutation({
-    mutationFn: () => syncGiftsFromTikTok({ data: { pin } }),
+    mutationFn: () => syncGiftsFromTikTok({ data: {} }),
     onSuccess: (res) => {
       if (!res.ok) {
         setSyncMsg(
-          res.error === "pin_incorreto"
-            ? "PIN incorreto"
-            : res.error === "sem_sala_ativa"
-              ? "Não foi possível ler os presentes agora (sala do TikTok indisponível)."
+          res.error === "sem_sala_ativa"
+            ? "O streamer não está ao vivo agora, então a galeria não pode ser lida."
+            : res.error === "galeria_indisponivel"
+              ? "A live não expôs a galeria neste momento."
               : `Falha ao sincronizar: ${res.error}`,
         );
         return;
       }
-      setSyncMsg(`${res.imported} presentes sincronizados do TikTok.`);
+      setSyncMsg(
+        `Galeria ${res.gallery}${res.league ? ` (liga ${res.league})` : ""}: ${res.lit}/${res.imported} iluminados.`,
+      );
       qc.invalidateQueries({ queryKey: ["gifts"] });
     },
     onError: () => setSyncMsg("Falha ao sincronizar com o TikTok."),
   });
 
   const isAdmin = adminOpen && pin.length >= 3 && !pinError;
+
+
 
 
   return (
