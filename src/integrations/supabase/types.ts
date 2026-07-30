@@ -26,6 +26,8 @@ export type Database = {
           name: string
           position: number
           remaining: number
+          sponsor_id: string | null
+          sponsor_name: string | null
           tiktok_gift_id: string | null
         }
         Insert: {
@@ -39,6 +41,8 @@ export type Database = {
           name: string
           position?: number
           remaining?: number
+          sponsor_id?: string | null
+          sponsor_name?: string | null
           tiktok_gift_id?: string | null
         }
         Update: {
@@ -52,6 +56,8 @@ export type Database = {
           name?: string
           position?: number
           remaining?: number
+          sponsor_id?: string | null
+          sponsor_name?: string | null
           tiktok_gift_id?: string | null
         }
         Relationships: []
