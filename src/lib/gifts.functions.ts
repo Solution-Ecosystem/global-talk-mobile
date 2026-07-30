@@ -13,6 +13,8 @@ export type GiftItem = {
   tiktok_gift_id: string | null;
   remaining: number;
   is_gallery: boolean;
+  sponsor_id: string | null;
+  sponsor_name: string | null;
 };
 
 export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
@@ -21,7 +23,7 @@ export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
     supabaseAdmin
       .from("gift_items")
       .select(
-        "id, gallery, name, lit, position, coins, icon_url, tiktok_gift_id, remaining, is_gallery",
+        "id, gallery, name, lit, position, coins, icon_url, tiktok_gift_id, remaining, is_gallery, sponsor_id, sponsor_name",
       )
       .order("gallery", { ascending: true })
       .order("position", { ascending: true }),
@@ -93,6 +95,7 @@ export const syncGiftsFromTikTok = createServerFn({ method: "POST" })
             gift_id?: number;
             left_count_to_sponsor?: number;
             is_gallery_available?: boolean;
+            sponsor_id?: number | string;
           }>;
         };
       };
@@ -119,13 +122,16 @@ export const syncGiftsFromTikTok = createServerFn({ method: "POST" })
       .map((e) => {
         const g = catalog.get(String(e.gift_id));
         const remaining = Math.max(0, Number(e.left_count_to_sponsor ?? 0));
+        const sponsorId = String(e.sponsor_id ?? "0");
+        const sponsored = sponsorId !== "0" && sponsorId !== "";
         return {
           tiktok_gift_id: String(e.gift_id),
           name: String(g?.name ?? `Presente ${e.gift_id}`),
           coins: Number(g?.diamond_count ?? 0),
           icon_url: g?.image?.url_list?.[0] ?? g?.icon?.url_list?.[0] ?? null,
           remaining,
-          lit: remaining === 0,
+          sponsor_id: sponsored ? sponsorId : null,
+          lit: sponsored || remaining === 0,
         };
       })
       .sort((a, b) => a.coins - b.coins);

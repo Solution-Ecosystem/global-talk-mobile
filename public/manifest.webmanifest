@@ -1,13 +1,16 @@
 {
   "name": "APP TDC",
-  "short_name": "APP TDC",
+  "short_name": "TDC",
+  "id": "/",
   "description": "Receba notificações quando o streamer estiver ao vivo no TikTok.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b1024",
   "theme_color": "#0b1024",
   "icons": [
+    { "src": "/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/app-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/app-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
