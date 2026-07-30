@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as GaleriaRouteImport } from './routes/galeria'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicPushSubscribeRouteImport } from './routes/api/public/push/subscribe'
 import { Route as ApiPublicHooksCheckLiveRouteImport } from './routes/api/public/hooks/check-live'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GaleriaRoute = GaleriaRouteImport.update({
   id: '/galeria',
   path: '/galeria',
@@ -38,12 +44,14 @@ const ApiPublicHooksCheckLiveRoute = ApiPublicHooksCheckLiveRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/galeria': typeof GaleriaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/galeria': typeof GaleriaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
 }
@@ -51,6 +59,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/galeria': typeof GaleriaRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
 }
@@ -59,18 +68,21 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/galeria'
+    | '/sitemap.xml'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/galeria'
+    | '/sitemap.xml'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
   id:
     | '__root__'
     | '/'
     | '/galeria'
+    | '/sitemap.xml'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
   fileRoutesById: FileRoutesById
@@ -78,12 +90,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GaleriaRoute: typeof GaleriaRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiPublicHooksCheckLiveRoute: typeof ApiPublicHooksCheckLiveRoute
   ApiPublicPushSubscribeRoute: typeof ApiPublicPushSubscribeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/galeria': {
       id: '/galeria'
       path: '/galeria'
@@ -118,6 +138,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GaleriaRoute: GaleriaRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiPublicHooksCheckLiveRoute: ApiPublicHooksCheckLiveRoute,
   ApiPublicPushSubscribeRoute: ApiPublicPushSubscribeRoute,
 }
