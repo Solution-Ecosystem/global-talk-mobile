@@ -87,6 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Notificações da live do streamer no TikTok, chat, presentes e redes sociais." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "google-site-verification", content: "82rPiYZL_3PCEWxTARIoPekXpurOdEDh7kxO9lRnang" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
