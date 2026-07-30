@@ -13,6 +13,8 @@ export type GiftItem = {
   tiktok_gift_id: string | null;
   remaining: number;
   is_gallery: boolean;
+  sponsor_id: string | null;
+  sponsor_name: string | null;
 };
 
 export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
@@ -21,7 +23,7 @@ export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
     supabaseAdmin
       .from("gift_items")
       .select(
-        "id, gallery, name, lit, position, coins, icon_url, tiktok_gift_id, remaining, is_gallery",
+        "id, gallery, name, lit, position, coins, icon_url, tiktok_gift_id, remaining, is_gallery, sponsor_id, sponsor_name",
       )
       .order("gallery", { ascending: true })
       .order("position", { ascending: true }),
