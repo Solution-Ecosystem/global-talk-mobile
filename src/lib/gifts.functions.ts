@@ -145,16 +145,44 @@ export const syncGiftsFromTikTok = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Remove itens da galeria que não fazem mais parte da coleção atual
-    await supabaseAdmin
+    // Itens já existentes da galeria (para preservar nomes de presenteadores
+    // preenchidos manualmente e itens que o TikTok já removeu por estarem completos)
+    const { data: existing } = await supabaseAdmin
       .from("gift_items")
-      .delete()
-      .eq("is_gallery", true)
-      .not("tiktok_gift_id", "in", `(${payload.map((p) => p.tiktok_gift_id).join(",")})`);
+      .select("id, gallery, tiktok_gift_id, sponsor_name")
+      .eq("is_gallery", true);
 
-    const { error } = await supabaseAdmin
-      .from("gift_items")
-      .upsert(payload, { onConflict: "gallery,tiktok_gift_id", ignoreDuplicates: false });
+    const nameById = new Map(
+      (existing ?? [])
+        .filter((e) => e.tiktok_gift_id && e.sponsor_name)
+        .map((e) => [e.tiktok_gift_id as string, e.sponsor_name as string] as const),
+    );
+
+    // Remove apenas itens de galerias antigas (quando o streamer muda de liga).
+    // Itens da galeria atual que saíram da API (normalmente porque já foram
+    // totalmente iluminados) são mantidos e marcados como iluminados.
+    const staleIds = (existing ?? [])
+      .filter((e) => e.gallery !== gallery)
+      .map((e) => e.id);
+    if (staleIds.length > 0) {
+      await supabaseAdmin.from("gift_items").delete().in("id", staleIds);
+    }
+
+    const currentIds = new Set(payload.map((p) => p.tiktok_gift_id));
+    const completedIds = (existing ?? [])
+      .filter((e) => e.gallery === gallery && e.tiktok_gift_id && !currentIds.has(e.tiktok_gift_id))
+      .map((e) => e.id);
+    if (completedIds.length > 0) {
+      await supabaseAdmin
+        .from("gift_items")
+        .update({ lit: true, remaining: 0 })
+        .in("id", completedIds);
+    }
+
+    const { error } = await supabaseAdmin.from("gift_items").upsert(
+      payload.map((p) => ({ ...p, sponsor_name: nameById.get(p.tiktok_gift_id) ?? null })),
+      { onConflict: "gallery,tiktok_gift_id", ignoreDuplicates: false },
+    );
     if (error) {
       return { ok: false as const, error: error.message };
     }
