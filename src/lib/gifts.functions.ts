@@ -254,5 +254,12 @@ export const updateGifts = createServerFn({ method: "POST" })
     if (data.remove) {
       await supabaseAdmin.from("gift_items").delete().eq("id", data.remove.id);
     }
+    if (data.sponsorName) {
+      const name = data.sponsorName.name.trim().slice(0, 60);
+      await supabaseAdmin
+        .from("gift_items")
+        .update({ sponsor_name: name || null })
+        .eq("id", data.sponsorName.id);
+    }
     return { ok: true as const };
   });
