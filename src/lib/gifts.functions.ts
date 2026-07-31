@@ -211,6 +211,7 @@ export const updateGifts = createServerFn({ method: "POST" })
       toggle?: { id: string; lit: boolean };
       add?: { gallery: Gallery; name: string };
       remove?: { id: string };
+      sponsorName?: { id: string; name: string };
     }) => {
       if (!data || typeof data.pin !== "string" || data.pin.length < 3) {
         throw new Error("PIN inválido");
