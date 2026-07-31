@@ -146,25 +146,36 @@ function GaleriaPage() {
         {isAdmin && (
           <div className="flex flex-col gap-2">
             {items.map((item) => (
-              <div key={item.id} className="flex items-center gap-2 rounded-xl bg-card px-3 py-2">
-                <p className="min-w-0 flex-1 truncate text-xs">{item.name}</p>
-                <button
-                  onClick={() => mutation.mutate({ pin, toggle: { id: item.id, lit: !item.lit } })}
-                  className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
-                >
-                  {item.lit ? "Apagar" : "Iluminar"}
-                </button>
-                <button
-                  aria-label={`Remover ${item.name}`}
-                  onClick={() => mutation.mutate({ pin, remove: { id: item.id } })}
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-background/60 text-muted-foreground"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+              <div key={item.id} className="flex flex-col gap-2 rounded-xl bg-card px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <p className="min-w-0 flex-1 truncate text-xs">{item.name}</p>
+                  <button
+                    onClick={() => mutation.mutate({ pin, toggle: { id: item.id, lit: !item.lit } })}
+                    className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
+                  >
+                    {item.lit ? "Apagar" : "Iluminar"}
+                  </button>
+                  <button
+                    aria-label={`Remover ${item.name}`}
+                    onClick={() => mutation.mutate({ pin, remove: { id: item.id } })}
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-background/60 text-muted-foreground"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                {item.lit && (
+                  <SponsorNameInput
+                    item={item}
+                    onSave={(name) =>
+                      mutation.mutate({ pin, sponsorName: { id: item.id, name } })
+                    }
+                  />
+                )}
               </div>
             ))}
           </div>
         )}
+
 
         {/* Área do administrador */}
         <div className="rounded-2xl bg-card px-4 py-3.5 flex flex-col gap-3">
@@ -217,7 +228,9 @@ function GaleriaPage() {
 }
 
 function GiftCard({ item }: { item: GiftItem }) {
-  const sponsor = item.sponsor_name ?? (item.sponsor_id ? "Iluminado" : null);
+  const sponsor =
+    item.sponsor_name?.trim() ||
+    (item.sponsor_id ? `Fã #${item.sponsor_id.slice(-4)}` : "Iluminado");
   return (
     <div
       className={`flex flex-col overflow-hidden rounded-2xl ${
@@ -249,13 +262,40 @@ function GiftCard({ item }: { item: GiftItem }) {
       </div>
       <div className="mt-auto flex min-h-9 items-center justify-center gap-1 bg-background/50 px-2 py-1.5">
         {item.lit ? (
-          <p className="truncate text-[10px] text-muted-foreground">{sponsor ?? "Iluminado"}</p>
+          <p className="truncate text-[10px] text-muted-foreground">{sponsor}</p>
         ) : (
           <p className="text-[10px] text-muted-foreground">
             <span className="text-xs font-bold text-foreground">{item.remaining}</span> para iluminar
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+function SponsorNameInput({
+  item,
+  onSave,
+}: {
+  item: GiftItem;
+  onSave: (name: string) => void;
+}) {
+  const [value, setValue] = useState(item.sponsor_name ?? "");
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        value={value}
+        maxLength={60}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Quem iluminou (nome)"
+        className="min-w-0 flex-1 rounded-lg bg-background/60 px-2 py-1 text-[11px] outline-none"
+      />
+      <button
+        onClick={() => onSave(value)}
+        className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
+      >
+        Salvar
+      </button>
     </div>
   );
 }
