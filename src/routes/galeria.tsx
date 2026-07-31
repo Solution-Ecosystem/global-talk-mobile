@@ -146,25 +146,36 @@ function GaleriaPage() {
         {isAdmin && (
           <div className="flex flex-col gap-2">
             {items.map((item) => (
-              <div key={item.id} className="flex items-center gap-2 rounded-xl bg-card px-3 py-2">
-                <p className="min-w-0 flex-1 truncate text-xs">{item.name}</p>
-                <button
-                  onClick={() => mutation.mutate({ pin, toggle: { id: item.id, lit: !item.lit } })}
-                  className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
-                >
-                  {item.lit ? "Apagar" : "Iluminar"}
-                </button>
-                <button
-                  aria-label={`Remover ${item.name}`}
-                  onClick={() => mutation.mutate({ pin, remove: { id: item.id } })}
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-background/60 text-muted-foreground"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+              <div key={item.id} className="flex flex-col gap-2 rounded-xl bg-card px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <p className="min-w-0 flex-1 truncate text-xs">{item.name}</p>
+                  <button
+                    onClick={() => mutation.mutate({ pin, toggle: { id: item.id, lit: !item.lit } })}
+                    className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
+                  >
+                    {item.lit ? "Apagar" : "Iluminar"}
+                  </button>
+                  <button
+                    aria-label={`Remover ${item.name}`}
+                    onClick={() => mutation.mutate({ pin, remove: { id: item.id } })}
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-background/60 text-muted-foreground"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                {item.lit && (
+                  <SponsorNameInput
+                    item={item}
+                    onSave={(name) =>
+                      mutation.mutate({ pin, sponsorName: { id: item.id, name } })
+                    }
+                  />
+                )}
               </div>
             ))}
           </div>
         )}
+
 
         {/* Área do administrador */}
         <div className="rounded-2xl bg-card px-4 py-3.5 flex flex-col gap-3">
