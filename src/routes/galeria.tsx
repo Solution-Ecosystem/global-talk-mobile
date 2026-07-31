@@ -217,7 +217,9 @@ function GaleriaPage() {
 }
 
 function GiftCard({ item }: { item: GiftItem }) {
-  const sponsor = item.sponsor_name ?? (item.sponsor_id ? "Iluminado" : null);
+  const sponsor =
+    item.sponsor_name?.trim() ||
+    (item.sponsor_id ? `Fã #${item.sponsor_id.slice(-4)}` : "Iluminado");
   return (
     <div
       className={`flex flex-col overflow-hidden rounded-2xl ${
