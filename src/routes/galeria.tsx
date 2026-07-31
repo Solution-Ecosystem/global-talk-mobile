@@ -272,3 +272,30 @@ function GiftCard({ item }: { item: GiftItem }) {
     </div>
   );
 }
+
+function SponsorNameInput({
+  item,
+  onSave,
+}: {
+  item: GiftItem;
+  onSave: (name: string) => void;
+}) {
+  const [value, setValue] = useState(item.sponsor_name ?? "");
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        value={value}
+        maxLength={60}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Quem iluminou (nome)"
+        className="min-w-0 flex-1 rounded-lg bg-background/60 px-2 py-1 text-[11px] outline-none"
+      />
+      <button
+        onClick={() => onSave(value)}
+        className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
+      >
+        Salvar
+      </button>
+    </div>
+  );
+}
