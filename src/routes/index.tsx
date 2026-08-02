@@ -8,7 +8,6 @@ import {
   MessageCircle,
   Image as ImageIcon,
   Coins,
-  ShoppingCart,
   Share2,
   Home,
   Music2,
@@ -469,5 +468,30 @@ function SocialRow({ href, icon, label }: { href: string; icon: React.ReactNode;
       </span>
       <span className="text-sm font-semibold">{label}</span>
     </a>
+  );
+}
+
+function InternalCard({
+  to,
+  icon,
+  title,
+  subtitle,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card px-4 py-6 hover:bg-accent transition"
+    >
+      <span className="grid h-14 w-14 place-items-center rounded-full bg-background/60 text-foreground">
+        {icon}
+      </span>
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-[11px] text-muted-foreground text-center leading-tight">{subtitle}</p>
+    </Link>
   );
 }
