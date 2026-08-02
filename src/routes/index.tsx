@@ -16,6 +16,9 @@ import {
   Youtube,
   Radio,
   X,
+  Link2 as LinkIcon,
+  Wrench,
+
 
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
