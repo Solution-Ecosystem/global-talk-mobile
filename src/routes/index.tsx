@@ -313,37 +313,32 @@ function Index() {
 
         {/* Grid cards */}
         <div className="grid grid-cols-2 gap-3">
-          <GridCard
-            href={STREAMER.chatUrl}
+          <InternalCard
+            to="/chat"
             icon={<MessageCircle className="h-6 w-6" />}
             title="Chat"
-            subtitle="Grupo exclusivo"
+            subtitle="Vincule seu TikTok"
           />
-          <Link
+          <InternalCard
             to="/galeria"
-            className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card px-4 py-6 hover:bg-accent transition"
-          >
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-background/60 text-foreground">
-              <ImageIcon className="h-6 w-6" />
-            </span>
-            <p className="text-sm font-semibold">Galeria</p>
-            <p className="text-[11px] text-muted-foreground text-center leading-tight">
-              Presentes iluminados
-            </p>
-          </Link>
+            icon={<ImageIcon className="h-6 w-6" />}
+            title="Galeria"
+            subtitle="Presentes iluminados"
+          />
 
           <GridCard
             href={STREAMER.coinsUrl}
             icon={<Coins className="h-6 w-6" />}
             title="Moedas"
-            subtitle="Presentes da liga"
-          />
-          <GridCard
-            href={STREAMER.coinsUrl}
-            icon={<ShoppingCart className="h-6 w-6" />}
-            title="Moedas"
             subtitle="Comprar com desconto"
           />
+          <InternalCard
+            to="/ferramentas"
+            icon={<Wrench className="h-6 w-6" />}
+            title="Ferramentas"
+            subtitle="Luva, martelo, névoa e impulso"
+          />
+
         </div>
 
         {/* Redes sociais */}
