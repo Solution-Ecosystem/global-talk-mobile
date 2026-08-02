@@ -211,13 +211,24 @@ function Index() {
             </div>
             <h1 className="text-lg font-semibold tracking-tight">{STREAMER.name}</h1>
           </div>
-          <button
-            aria-label="Configurações"
-            className="grid h-10 w-10 place-items-center rounded-full bg-card/70 hover:bg-card transition"
-          >
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/chat"
+              aria-label="Vincular conta do TikTok"
+              className="flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-2 text-[11px] font-semibold hover:bg-card transition"
+            >
+              <LinkIcon className="h-3.5 w-3.5 text-primary" />
+              Vincular TikTok
+            </Link>
+            <button
+              aria-label="Configurações"
+              className="grid h-10 w-10 place-items-center rounded-full bg-card/70 hover:bg-card transition"
+            >
+              <Settings className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
         </header>
+
 
         {/* Status live */}
         <a
