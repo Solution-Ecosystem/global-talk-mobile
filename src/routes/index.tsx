@@ -8,7 +8,6 @@ import {
   MessageCircle,
   Image as ImageIcon,
   Coins,
-  ShoppingCart,
   Share2,
   Home,
   Music2,
@@ -16,6 +15,9 @@ import {
   Youtube,
   Radio,
   X,
+  Link2 as LinkIcon,
+  Wrench,
+
 
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
@@ -211,13 +213,24 @@ function Index() {
             </div>
             <h1 className="text-lg font-semibold tracking-tight">{STREAMER.name}</h1>
           </div>
-          <button
-            aria-label="Configurações"
-            className="grid h-10 w-10 place-items-center rounded-full bg-card/70 hover:bg-card transition"
-          >
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/chat"
+              aria-label="Vincular conta do TikTok"
+              className="flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-2 text-[11px] font-semibold hover:bg-card transition"
+            >
+              <LinkIcon className="h-3.5 w-3.5 text-primary" />
+              Vincular TikTok
+            </Link>
+            <button
+              aria-label="Configurações"
+              className="grid h-10 w-10 place-items-center rounded-full bg-card/70 hover:bg-card transition"
+            >
+              <Settings className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
         </header>
+
 
         {/* Status live */}
         <a
@@ -299,37 +312,32 @@ function Index() {
 
         {/* Grid cards */}
         <div className="grid grid-cols-2 gap-3">
-          <GridCard
-            href={STREAMER.chatUrl}
+          <InternalCard
+            to="/chat"
             icon={<MessageCircle className="h-6 w-6" />}
             title="Chat"
-            subtitle="Grupo exclusivo"
+            subtitle="Vincule seu TikTok"
           />
-          <Link
+          <InternalCard
             to="/galeria"
-            className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card px-4 py-6 hover:bg-accent transition"
-          >
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-background/60 text-foreground">
-              <ImageIcon className="h-6 w-6" />
-            </span>
-            <p className="text-sm font-semibold">Galeria</p>
-            <p className="text-[11px] text-muted-foreground text-center leading-tight">
-              Presentes iluminados
-            </p>
-          </Link>
+            icon={<ImageIcon className="h-6 w-6" />}
+            title="Galeria"
+            subtitle="Presentes iluminados"
+          />
 
           <GridCard
             href={STREAMER.coinsUrl}
             icon={<Coins className="h-6 w-6" />}
             title="Moedas"
-            subtitle="Presentes da liga"
-          />
-          <GridCard
-            href={STREAMER.coinsUrl}
-            icon={<ShoppingCart className="h-6 w-6" />}
-            title="Moedas"
             subtitle="Comprar com desconto"
           />
+          <InternalCard
+            to="/ferramentas"
+            icon={<Wrench className="h-6 w-6" />}
+            title="Ferramentas"
+            subtitle="Luva, martelo, névoa e impulso"
+          />
+
         </div>
 
         {/* Redes sociais */}
@@ -460,5 +468,30 @@ function SocialRow({ href, icon, label }: { href: string; icon: React.ReactNode;
       </span>
       <span className="text-sm font-semibold">{label}</span>
     </a>
+  );
+}
+
+function InternalCard({
+  to,
+  icon,
+  title,
+  subtitle,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card px-4 py-6 hover:bg-accent transition"
+    >
+      <span className="grid h-14 w-14 place-items-center rounded-full bg-background/60 text-foreground">
+        {icon}
+      </span>
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-[11px] text-muted-foreground text-center leading-tight">{subtitle}</p>
+    </Link>
   );
 }

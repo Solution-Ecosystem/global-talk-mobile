@@ -287,9 +287,10 @@ function SponsorNameInput({
         value={value}
         maxLength={60}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Quem iluminou (nome)"
+        placeholder="@usuario do TikTok ou nome"
         className="min-w-0 flex-1 rounded-lg bg-background/60 px-2 py-1 text-[11px] outline-none"
       />
+
       <button
         onClick={() => onSave(value)}
         className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"

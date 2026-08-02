@@ -19,7 +19,7 @@ export type GiftItem = {
 
 export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const [{ data: items }, { data: state }] = await Promise.all([
+  const [{ data: items }, { data: state }, { data: names }] = await Promise.all([
     supabaseAdmin
       .from("gift_items")
       .select(
@@ -28,14 +28,22 @@ export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
       .order("gallery", { ascending: true })
       .order("position", { ascending: true }),
     supabaseAdmin.from("gift_state").select("current_gallery, league, updated_at").eq("id", 1).single(),
+    supabaseAdmin.from("tiktok_user_names").select("uid, name"),
   ]);
+  // Substitui o ID do presenteador pelo nome real sempre que ele for conhecido.
+  const nameByUid = new Map((names ?? []).map((n) => [n.uid, n.name] as const));
+  const resolved = ((items ?? []) as GiftItem[]).map((i) => ({
+    ...i,
+    sponsor_name: i.sponsor_name ?? (i.sponsor_id ? (nameByUid.get(i.sponsor_id) ?? null) : null),
+  }));
   return {
-    items: (items ?? []) as GiftItem[],
+    items: resolved,
     currentGallery: (state?.current_gallery ?? "D") as Gallery,
     league: (state?.league ?? null) as string | null,
     updatedAt: state?.updated_at ?? null,
   };
 });
+
 
 /**
  * Sincroniza a galeria de presentes real da live do TikTok.
@@ -255,11 +263,60 @@ export const updateGifts = createServerFn({ method: "POST" })
       await supabaseAdmin.from("gift_items").delete().eq("id", data.remove.id);
     }
     if (data.sponsorName) {
-      const name = data.sponsorName.name.trim().slice(0, 60);
+      let name = data.sponsorName.name.trim().slice(0, 60);
+
+      // Se o admin informar um @, buscamos o nome real do perfil no TikTok.
+      if (name.startsWith("@")) {
+        const username = name.slice(1).replace(/\/+$/, "");
+        if (/^[\w.\-]{2,24}$/.test(username)) {
+          try {
+            const res = await fetch(
+              `https://www.tiktok.com/api-live/user/room/?aid=1988&sourceType=54&uniqueId=${encodeURIComponent(username)}`,
+              {
+                headers: {
+                  "User-Agent":
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                  Referer: "https://www.tiktok.com/",
+                },
+              },
+            );
+            if (res.ok) {
+              const json = (await res.json()) as {
+                data?: { user?: { id?: string; nickname?: string; uniqueId?: string } };
+              };
+              const user = json?.data?.user;
+              if (user?.nickname) name = user.nickname.slice(0, 60);
+              if (user?.id && user?.nickname) {
+                await supabaseAdmin
+                  .from("tiktok_user_names")
+                  .upsert({ uid: String(user.id), name: user.nickname }, { onConflict: "uid" });
+              }
+            }
+          } catch {
+            /* mantém o texto digitado */
+          }
+        }
+      }
+
+      const { data: item } = await supabaseAdmin
+        .from("gift_items")
+        .select("sponsor_id")
+        .eq("id", data.sponsorName.id)
+        .maybeSingle();
+
       await supabaseAdmin
         .from("gift_items")
         .update({ sponsor_name: name || null })
         .eq("id", data.sponsorName.id);
+
+      // Guarda o nome para esse ID de presenteador, para aparecer
+      // automaticamente nos próximos presentes que ele iluminar.
+      if (name && item?.sponsor_id) {
+        await supabaseAdmin
+          .from("tiktok_user_names")
+          .upsert({ uid: item.sponsor_id, name }, { onConflict: "uid" });
+      }
     }
+
     return { ok: true as const };
   });

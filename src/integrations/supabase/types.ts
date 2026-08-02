@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          avatar_url: string | null
+          body: string
+          created_at: string
+          device_id: string
+          display_name: string | null
+          id: string
+          tiktok_username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          body: string
+          created_at?: string
+          device_id: string
+          display_name?: string | null
+          id?: string
+          tiktok_username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          body?: string
+          created_at?: string
+          device_id?: string
+          display_name?: string | null
+          id?: string
+          tiktok_username?: string
+        }
+        Relationships: []
+      }
+      chat_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          device_id: string
+          display_name: string | null
+          id: string
+          tiktok_username: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          device_id: string
+          display_name?: string | null
+          id?: string
+          tiktok_username: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          device_id?: string
+          display_name?: string | null
+          id?: string
+          tiktok_username?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gift_items: {
         Row: {
           coins: number
@@ -110,6 +170,36 @@ export type Database = {
         }
         Relationships: []
       }
+      live_tools: {
+        Row: {
+          created_at: string
+          holder_name: string
+          id: string
+          note: string | null
+          position: number
+          tool: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          holder_name: string
+          id?: string
+          note?: string | null
+          position?: number
+          tool: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          holder_name?: string
+          id?: string
+          note?: string | null
+          position?: number
+          tool?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -137,6 +227,27 @@ export type Database = {
           last_seen_at?: string
           p256dh?: string
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      tiktok_user_names: {
+        Row: {
+          created_at: string
+          name: string
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          name: string
+          uid: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          name?: string
+          uid?: string
+          updated_at?: string
         }
         Relationships: []
       }
