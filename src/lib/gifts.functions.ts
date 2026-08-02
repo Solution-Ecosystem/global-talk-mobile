@@ -19,7 +19,7 @@ export type GiftItem = {
 
 export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const [{ data: items }, { data: state }] = await Promise.all([
+  const [{ data: items }, { data: state }, { data: names }] = await Promise.all([
     supabaseAdmin
       .from("gift_items")
       .select(
@@ -28,14 +28,22 @@ export const getGifts = createServerFn({ method: "GET" }).handler(async () => {
       .order("gallery", { ascending: true })
       .order("position", { ascending: true }),
     supabaseAdmin.from("gift_state").select("current_gallery, league, updated_at").eq("id", 1).single(),
+    supabaseAdmin.from("tiktok_user_names").select("uid, name"),
   ]);
+  // Substitui o ID do presenteador pelo nome real sempre que ele for conhecido.
+  const nameByUid = new Map((names ?? []).map((n) => [n.uid, n.name] as const));
+  const resolved = ((items ?? []) as GiftItem[]).map((i) => ({
+    ...i,
+    sponsor_name: i.sponsor_name ?? (i.sponsor_id ? (nameByUid.get(i.sponsor_id) ?? null) : null),
+  }));
   return {
-    items: (items ?? []) as GiftItem[],
+    items: resolved,
     currentGallery: (state?.current_gallery ?? "D") as Gallery,
     league: (state?.league ?? null) as string | null,
     updatedAt: state?.updated_at ?? null,
   };
 });
+
 
 /**
  * Sincroniza a galeria de presentes real da live do TikTok.
