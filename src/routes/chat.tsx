@@ -45,11 +45,22 @@ function ChatPage() {
   const qc = useQueryClient();
   const [deviceId, setDeviceId] = useState("");
   const [text, setText] = useState("");
-  const [username, setUsername] = useState("");
-  const [linkError, setLinkError] = useState("");
+  const [loginError, setLoginError] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setDeviceId(getDeviceId()), []);
+
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get("login");
+    if (!status || status === "ok") return;
+    setLoginError(
+      status === "nao_configurado"
+        ? "O login com TikTok ainda não está configurado."
+        : status === "cancelado"
+          ? "Login cancelado."
+          : "Não foi possível concluir o login com o TikTok.",
+    );
+  }, []);
 
   const profileQuery = useQuery({
     queryKey: ["chat-profile", deviceId],
@@ -70,22 +81,18 @@ function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  const link = useMutation({
-    mutationFn: () => linkTikTokAccount({ data: { deviceId, username } }),
+  const login = useMutation({
+    mutationFn: () => startTikTokLogin({ data: { deviceId } }),
     onSuccess: (res) => {
       if (!res.ok) {
-        setLinkError(
-          res.error === "conta_nao_encontrada"
-            ? "Não encontramos esse @ no TikTok."
-            : "Não foi possível validar sua conta agora.",
-        );
+        setLoginError("O login com TikTok ainda não está configurado.");
         return;
       }
-      setLinkError("");
-      qc.invalidateQueries({ queryKey: ["chat-profile", deviceId] });
+      window.location.href = res.url;
     },
-    onError: () => setLinkError("@ inválido."),
+    onError: () => setLoginError("Não foi possível iniciar o login."),
   });
+
 
   const send = useMutation({
     mutationFn: () => sendChatMessage({ data: { deviceId, body: text } }),
