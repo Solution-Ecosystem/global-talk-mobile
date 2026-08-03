@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosDeServicoRouteImport } from './routes/termos-de-servico'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
 import { Route as GaleriaRouteImport } from './routes/galeria'
 import { Route as FerramentasRouteImport } from './routes/ferramentas'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -18,9 +20,19 @@ import { Route as ApiPublicTiktokCallbackRouteImport } from './routes/api/public
 import { Route as ApiPublicPushSubscribeRouteImport } from './routes/api/public/push/subscribe'
 import { Route as ApiPublicHooksCheckLiveRouteImport } from './routes/api/public/hooks/check-live'
 
+const TermosDeServicoRoute = TermosDeServicoRouteImport.update({
+  id: '/termos-de-servico',
+  path: '/termos-de-servico',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaDePrivacidadeRoute = PoliticaDePrivacidadeRouteImport.update({
+  id: '/politica-de-privacidade',
+  path: '/politica-de-privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GaleriaRoute = GaleriaRouteImport.update({
@@ -64,7 +76,9 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/termos-de-servico': typeof TermosDeServicoRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -74,7 +88,9 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/termos-de-servico': typeof TermosDeServicoRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -85,7 +101,9 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/termos-de-servico': typeof TermosDeServicoRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -97,7 +115,9 @@ export interface FileRouteTypes {
     | '/chat'
     | '/ferramentas'
     | '/galeria'
+    | '/politica-de-privacidade'
     | '/sitemap.xml'
+    | '/termos-de-servico'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
@@ -107,7 +127,9 @@ export interface FileRouteTypes {
     | '/chat'
     | '/ferramentas'
     | '/galeria'
+    | '/politica-de-privacidade'
     | '/sitemap.xml'
+    | '/termos-de-servico'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
@@ -117,7 +139,9 @@ export interface FileRouteTypes {
     | '/chat'
     | '/ferramentas'
     | '/galeria'
+    | '/politica-de-privacidade'
     | '/sitemap.xml'
+    | '/termos-de-servico'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
@@ -128,7 +152,9 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   FerramentasRoute: typeof FerramentasRoute
   GaleriaRoute: typeof GaleriaRoute
+  PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermosDeServicoRoute: typeof TermosDeServicoRoute
   ApiPublicHooksCheckLiveRoute: typeof ApiPublicHooksCheckLiveRoute
   ApiPublicPushSubscribeRoute: typeof ApiPublicPushSubscribeRoute
   ApiPublicTiktokCallbackRoute: typeof ApiPublicTiktokCallbackRoute
@@ -136,11 +162,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos-de-servico': {
+      id: '/termos-de-servico'
+      path: '/termos-de-servico'
+      fullPath: '/termos-de-servico'
+      preLoaderRoute: typeof TermosDeServicoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-de-privacidade': {
+      id: '/politica-de-privacidade'
+      path: '/politica-de-privacidade'
+      fullPath: '/politica-de-privacidade'
+      preLoaderRoute: typeof PoliticaDePrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/galeria': {
@@ -200,7 +240,9 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   FerramentasRoute: FerramentasRoute,
   GaleriaRoute: GaleriaRoute,
+  PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermosDeServicoRoute: TermosDeServicoRoute,
   ApiPublicHooksCheckLiveRoute: ApiPublicHooksCheckLiveRoute,
   ApiPublicPushSubscribeRoute: ApiPublicPushSubscribeRoute,
   ApiPublicTiktokCallbackRoute: ApiPublicTiktokCallbackRoute,
@@ -208,13 +250,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

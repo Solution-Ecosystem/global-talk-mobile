@@ -17,8 +17,8 @@ import {
   X,
   Link2 as LinkIcon,
   Wrench,
-
-
+  FileText,
+  Shield,
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
 import tdcLogo from "@/assets/tdc-logo.png";
@@ -394,6 +394,35 @@ function Index() {
         </div>
       )}
 
+      {/* Links legais */}
+      <div className="mt-2 grid grid-cols-2 gap-3">
+        <Link
+          to="/termos-de-servico"
+          className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 hover:bg-accent transition"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
+            <FileText className="h-4 w-4 text-primary" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold">Termos</p>
+            <p className="text-[11px] text-muted-foreground truncate">Termos de Serviço</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link
+          to="/politica-de-privacidade"
+          className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 hover:bg-accent transition"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
+            <Shield className="h-4 w-4 text-primary" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold">Privacidade</p>
+            <p className="text-[11px] text-muted-foreground truncate">Política de Privacidade</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        </Link>
+      </div>
 
       {/* Bottom nav fixa */}
       <nav
