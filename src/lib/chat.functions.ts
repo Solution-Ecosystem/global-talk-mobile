@@ -95,7 +95,7 @@ export const getChatMessages = createServerFn({ method: "GET" }).handler(async (
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("chat_messages")
-    .select("id, device_id, tiktok_username, display_name, avatar_url, body, created_at")
+    .select("id, tiktok_username, display_name, avatar_url, body, created_at")
     .order("created_at", { ascending: false })
     .limit(120);
   return { messages: ((data ?? []) as ChatMessage[]).reverse() };
