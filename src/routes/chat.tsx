@@ -111,29 +111,21 @@ function ChatPage() {
 
         {!profile && (
           <div className="rounded-2xl bg-card px-4 py-4 flex flex-col gap-2">
-            <p className="text-sm font-semibold">Vincule sua conta do TikTok</p>
+            <p className="text-sm font-semibold">Entre com sua conta do TikTok</p>
             <p className="text-[11px] text-muted-foreground">
-              Só quem vincula a conta do TikTok consegue enviar mensagens no chat.
+              O login é feito no próprio TikTok. Só quem entra consegue enviar mensagens no chat.
             </p>
-            <input
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-                setLinkError("");
-              }}
-              placeholder="@seuusuario"
-              className="rounded-xl bg-background/60 px-3 py-2 text-sm outline-none"
-            />
-            {linkError && <p className="text-[11px] text-destructive">{linkError}</p>}
+            {loginError && <p className="text-[11px] text-destructive">{loginError}</p>}
             <button
-              onClick={() => link.mutate()}
-              disabled={link.isPending || username.trim().length < 2}
+              onClick={() => login.mutate()}
+              disabled={login.isPending || !deviceId}
               className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
             >
-              {link.isPending ? "Validando..." : "Vincular conta"}
+              {login.isPending ? "Abrindo TikTok..." : "Entrar com TikTok"}
             </button>
           </div>
         )}
+
 
         {profile && (
           <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3">
