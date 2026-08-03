@@ -5,10 +5,11 @@ import { ArrowLeft, Send, UserCheck } from "lucide-react";
 import {
   getChatMessages,
   getChatProfile,
-  linkTikTokAccount,
   sendChatMessage,
   type ChatMessage,
 } from "@/lib/chat.functions";
+import { startTikTokLogin } from "@/lib/tiktok-login.functions";
+
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
