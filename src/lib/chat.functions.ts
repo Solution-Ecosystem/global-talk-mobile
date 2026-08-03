@@ -9,7 +9,6 @@ export type ChatProfile = {
 
 export type ChatMessage = {
   id: string;
-  device_id: string;
   tiktok_username: string;
   display_name: string | null;
   avatar_url: string | null;
