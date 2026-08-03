@@ -17,8 +17,8 @@ import {
   X,
   Link2 as LinkIcon,
   Wrench,
-
-
+  FileText,
+  Shield,
 } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
 import tdcLogo from "@/assets/tdc-logo.png";
