@@ -14,8 +14,10 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
 import { Route as GaleriaRouteImport } from './routes/galeria'
 import { Route as FerramentasRouteImport } from './routes/ferramentas'
-import { Route as ChatRouteImport } from './routes/chat'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as ApiPublicTiktokCallbackRouteImport } from './routes/api/public/tiktok/callback'
 import { Route as ApiPublicPushSubscribeRouteImport } from './routes/api/public/push/subscribe'
 import { Route as ApiPublicHooksCheckLiveRouteImport } from './routes/api/public/hooks/check-live'
@@ -45,15 +47,24 @@ const FerramentasRoute = FerramentasRouteImport.update({
   path: '/ferramentas',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChatRoute = ChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicTiktokCallbackRoute = ApiPublicTiktokCallbackRouteImport.update({
   id: '/api/public/tiktok/callback',
@@ -73,24 +84,26 @@ const ApiPublicHooksCheckLiveRoute = ApiPublicHooksCheckLiveRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
+  '/auth': typeof AuthRoute
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
+  '/chat': typeof AuthenticatedChatRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
+  '/auth': typeof AuthRoute
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
+  '/chat': typeof AuthenticatedChatRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -98,12 +111,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
+  '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -112,36 +127,40 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/chat'
+    | '/auth'
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
     | '/sitemap.xml'
     | '/termos-de-servico'
+    | '/chat'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/chat'
+    | '/auth'
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
     | '/sitemap.xml'
     | '/termos-de-servico'
+    | '/chat'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
   id:
     | '__root__'
     | '/'
-    | '/chat'
+    | '/_authenticated'
+    | '/auth'
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
     | '/sitemap.xml'
     | '/termos-de-servico'
+    | '/_authenticated/chat'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
@@ -149,7 +168,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ChatRoute: typeof ChatRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   FerramentasRoute: typeof FerramentasRoute
   GaleriaRoute: typeof GaleriaRoute
   PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
@@ -197,11 +217,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FerramentasRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/chat': {
-      id: '/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof ChatRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -210,6 +237,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/chat': {
+      id: '/_authenticated/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AuthenticatedChatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/tiktok/callback': {
       id: '/api/public/tiktok/callback'
@@ -235,9 +269,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedChatRoute: AuthenticatedChatRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ChatRoute: ChatRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   FerramentasRoute: FerramentasRoute,
   GaleriaRoute: GaleriaRoute,
   PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,
