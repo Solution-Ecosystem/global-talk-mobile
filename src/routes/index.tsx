@@ -395,34 +395,28 @@ function Index() {
       )}
 
       {/* Links legais */}
-      <div className="mt-2 grid grid-cols-2 gap-3">
-        <Link
-          to="/termos-de-servico"
-          className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 hover:bg-accent transition"
-        >
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
-            <FileText className="h-4 w-4 text-primary" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">Termos</p>
-            <p className="text-[11px] text-muted-foreground truncate">Termos de Serviço</p>
-          </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-        </Link>
-        <Link
-          to="/politica-de-privacidade"
-          className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 hover:bg-accent transition"
-        >
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
-            <Shield className="h-4 w-4 text-primary" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">Privacidade</p>
-            <p className="text-[11px] text-muted-foreground truncate">Política de Privacidade</p>
-          </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-        </Link>
-      </div>
+      <footer className="mt-4 flex flex-col items-center gap-2 text-center">
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <Link
+            to="/termos-de-servico"
+            className="inline-flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-1.5 hover:bg-card transition"
+          >
+            <FileText className="h-3.5 w-3.5 text-primary" />
+            Termos de Serviço
+          </Link>
+          <Link
+            to="/politica-de-privacidade"
+            className="inline-flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-1.5 hover:bg-card transition"
+          >
+            <Shield className="h-3.5 w-3.5 text-primary" />
+            Privacidade
+          </Link>
+        </div>
+        <p className="text-[10px] text-muted-foreground/70">
+          APP TDC · fã-clube não oficial de @caiquevieira_
+        </p>
+      </footer>
+
 
       {/* Bottom nav fixa */}
       <nav
