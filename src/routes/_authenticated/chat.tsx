@@ -1,29 +1,24 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Send, UserCheck } from "lucide-react";
-import {
-  getChatMessages,
-  getChatProfile,
-  sendChatMessage,
-  type ChatMessage,
-} from "@/lib/chat.functions";
-import { startTikTokLogin } from "@/lib/tiktok-login.functions";
+import { ArrowLeft, LogOut, Send, UserCheck } from "lucide-react";
+import { getChatMessages, sendChatMessage, type ChatMessage } from "@/lib/chat.functions";
+import { getMyProfile, linkTikTok } from "@/lib/account.functions";
+import { supabase } from "@/integrations/supabase/client";
 
-
-export const Route = createFileRoute("/chat")({
+export const Route = createFileRoute("/_authenticated/chat")({
   head: () => ({
     meta: [
       { title: "Chat da Comunidade — APP TDC" },
       {
         name: "description",
         content:
-          "Converse com outros fãs do streamer no chat do APP TDC. Vincule sua conta do TikTok para participar.",
+          "Converse com outros fãs do streamer no chat do APP TDC. Faça login e vincule seu @ do TikTok para participar.",
       },
       { property: "og:title", content: "Chat da Comunidade — APP TDC" },
       {
         property: "og:description",
-        content: "Chat coletivo para quem vinculou a conta do TikTok no APP TDC.",
+        content: "Chat coletivo para quem tem conta no APP TDC com @ do TikTok vinculado.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -32,43 +27,17 @@ export const Route = createFileRoute("/chat")({
   component: ChatPage,
 });
 
-export function getDeviceId() {
-  if (typeof window === "undefined") return "";
-  let id = localStorage.getItem("tdc:device-id");
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem("tdc:device-id", id);
-  }
-  return id;
-}
-
 function ChatPage() {
   const qc = useQueryClient();
-  const [deviceId, setDeviceId] = useState("");
+  const navigate = useNavigate();
   const [text, setText] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const [handle, setHandle] = useState("");
+  const [linkError, setLinkError] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => setDeviceId(getDeviceId()), []);
-
-  useEffect(() => {
-    const status = new URLSearchParams(window.location.search).get("login");
-    if (!status || status === "ok") return;
-    setLoginError(
-      status === "nao_configurado"
-        ? "O login com TikTok ainda não está configurado."
-        : status === "cancelado"
-          ? "Login cancelado."
-          : "Não foi possível concluir o login com o TikTok.",
-    );
-  }, []);
-
-  const profileQuery = useQuery({
-    queryKey: ["chat-profile", deviceId],
-    queryFn: () => getChatProfile({ data: { deviceId } }),
-    enabled: !!deviceId,
-  });
+  const profileQuery = useQuery({ queryKey: ["app-profile"], queryFn: () => getMyProfile() });
   const profile = profileQuery.data?.profile ?? null;
+  const linked = !!profile?.tiktok_username;
 
   const messagesQuery = useQuery({
     queryKey: ["chat-messages"],
@@ -82,31 +51,45 @@ function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  const login = useMutation({
-    mutationFn: () => startTikTokLogin({ data: { deviceId } }),
+  const link = useMutation({
+    mutationFn: () => linkTikTok({ data: { username: handle } }),
     onSuccess: (res) => {
       if (!res.ok) {
-        setLoginError("O login com TikTok ainda não está configurado.");
+        setLinkError(
+          res.error === "conta_nao_encontrada"
+            ? "Não encontramos esse @ no TikTok."
+            : res.error === "ja_vinculado"
+              ? "Esse @ já está vinculado a outra conta."
+              : "Não foi possível vincular agora. Tente de novo.",
+        );
         return;
       }
-      window.location.href = res.url;
+      setLinkError("");
+      setHandle("");
+      qc.invalidateQueries({ queryKey: ["app-profile"] });
     },
-    onError: () => setLoginError("Não foi possível iniciar o login."),
+    onError: () => setLinkError("@ inválido."),
   });
 
-
   const send = useMutation({
-    mutationFn: () => sendChatMessage({ data: { deviceId, body: text } }),
+    mutationFn: () => sendChatMessage({ data: { body: text } }),
     onSuccess: () => {
       setText("");
       qc.invalidateQueries({ queryKey: ["chat-messages"] });
     },
   });
 
+  async function signOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
       <main className="w-full max-w-sm px-5 pt-6 pb-32 flex flex-col gap-4">
-        <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+        <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
           <Link
             to="/"
             aria-label="Voltar"
@@ -115,32 +98,21 @@ function ChatPage() {
             <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </Link>
           <h1 className="truncate text-lg font-semibold tracking-tight">Chat da Comunidade</h1>
+          <button
+            onClick={signOut}
+            aria-label="Sair"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card/70 hover:bg-card transition"
+          >
+            <LogOut className="h-4 w-4 text-muted-foreground" />
+          </button>
         </header>
-
-        {!profile && (
-          <div className="rounded-2xl bg-card px-4 py-4 flex flex-col gap-2">
-            <p className="text-sm font-semibold">Entre com sua conta do TikTok</p>
-            <p className="text-[11px] text-muted-foreground">
-              O login é feito no próprio TikTok. Só quem entra consegue enviar mensagens no chat.
-            </p>
-            {loginError && <p className="text-[11px] text-destructive">{loginError}</p>}
-            <button
-              onClick={() => login.mutate()}
-              disabled={login.isPending || !deviceId}
-              className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-            >
-              {login.isPending ? "Abrindo TikTok..." : "Entrar com TikTok"}
-            </button>
-          </div>
-        )}
-
 
         {profile && (
           <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3">
-            {profile.avatar_url ? (
+            {profile.tiktok_avatar_url ? (
               <img
-                src={profile.avatar_url}
-                alt={profile.display_name ?? profile.tiktok_username}
+                src={profile.tiktok_avatar_url}
+                alt={profile.name}
                 className="h-9 w-9 rounded-full object-cover"
               />
             ) : (
@@ -150,12 +122,43 @@ function ChatPage() {
             )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">
-                {profile.display_name ?? profile.tiktok_username}
+                {profile.name || "Sem nome"}
+                {linked && (
+                  <span className="ml-1.5 font-normal text-muted-foreground">
+                    @{profile.tiktok_username}
+                  </span>
+                )}
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                @{profile.tiktok_username} · conta vinculada
+                {linked ? "TikTok vinculado" : "Vincule seu @ do TikTok para falar"}
               </p>
             </div>
+          </div>
+        )}
+
+        {profile && !linked && (
+          <div className="rounded-2xl bg-card px-4 py-4 flex flex-col gap-2">
+            <p className="text-sm font-semibold">Vincular TikTok</p>
+            <p className="text-[11px] text-muted-foreground">
+              Digite o seu @ do TikTok. Ele fica ligado a esta conta e aparece ao lado do seu nome
+              no chat.
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                value={handle}
+                onChange={(e) => setHandle(e.target.value)}
+                placeholder="@seuusuario"
+                className="min-w-0 flex-1 rounded-xl bg-background/60 px-3 py-2 text-sm outline-none"
+              />
+              <button
+                onClick={() => handle.trim() && link.mutate()}
+                disabled={link.isPending || !handle.trim()}
+                className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                {link.isPending ? "..." : "Vincular"}
+              </button>
+            </div>
+            {linkError && <p className="text-[11px] text-destructive">{linkError}</p>}
           </div>
         )}
 
@@ -170,7 +173,7 @@ function ChatPage() {
               {m.avatar_url ? (
                 <img
                   src={m.avatar_url}
-                  alt={m.display_name ?? m.tiktok_username}
+                  alt={m.display_name ?? "Usuário"}
                   loading="lazy"
                   className="h-8 w-8 shrink-0 rounded-full object-cover"
                 />
@@ -179,10 +182,12 @@ function ChatPage() {
               )}
               <div className="min-w-0 flex-1 rounded-2xl bg-card px-3 py-2">
                 <p className="truncate text-[11px] font-semibold text-primary">
-                  {m.display_name ?? m.tiktok_username}
-                  <span className="ml-1 font-normal text-muted-foreground">
-                    @{m.tiktok_username}
-                  </span>
+                  {m.display_name ?? m.tiktok_username ?? "Usuário"}
+                  {m.tiktok_username && (
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      @{m.tiktok_username}
+                    </span>
+                  )}
                 </p>
                 <p className="whitespace-pre-wrap break-words text-sm">{m.body}</p>
               </div>
@@ -192,7 +197,7 @@ function ChatPage() {
         </div>
       </main>
 
-      {profile && (
+      {linked && (
         <div className="fixed bottom-0 left-1/2 w-full max-w-sm -translate-x-1/2 border-t border-border bg-card/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur">
           <div className="flex items-center gap-2">
             <input
