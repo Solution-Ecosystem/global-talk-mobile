@@ -14,33 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          tiktok_avatar_url: string | null
+          tiktok_display_name: string | null
+          tiktok_username: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name?: string
+          tiktok_avatar_url?: string | null
+          tiktok_display_name?: string | null
+          tiktok_username?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          tiktok_avatar_url?: string | null
+          tiktok_display_name?: string | null
+          tiktok_username?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           avatar_url: string | null
           body: string
           created_at: string
-          device_id: string
+          device_id: string | null
           display_name: string | null
           id: string
-          tiktok_username: string
+          tiktok_username: string | null
+          user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
           body: string
           created_at?: string
-          device_id: string
+          device_id?: string | null
           display_name?: string | null
           id?: string
-          tiktok_username: string
+          tiktok_username?: string | null
+          user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
           body?: string
           created_at?: string
-          device_id?: string
+          device_id?: string | null
           display_name?: string | null
           id?: string
-          tiktok_username?: string
+          tiktok_username?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
