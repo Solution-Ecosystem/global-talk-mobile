@@ -181,7 +181,7 @@ function ChatPage() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">
                 {profile.name || "Sem nome"}
-                {canChat && linked && (
+                {linked && (
                   <span className="ml-1.5 font-normal text-muted-foreground">
                     @{profile.tiktok_username}
                   </span>
@@ -257,7 +257,7 @@ function ChatPage() {
         )}
       </main>
 
-      {linked && (
+      {canChat && linked && (
         <div className="fixed bottom-0 left-1/2 w-full max-w-sm -translate-x-1/2 border-t border-border bg-card/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur">
           <div className="flex items-center gap-2">
             <input
