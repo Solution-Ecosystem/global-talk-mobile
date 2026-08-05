@@ -30,7 +30,9 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -42,19 +44,29 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setInfo("");
     setLoading(true);
     try {
       if (mode === "signup") {
         if (name.trim().length < 2) throw new Error("Informe seu nome.");
-        const { error: err } = await supabase.auth.signUp({
+        if (!accepted)
+          throw new Error("Você precisa aceitar os Termos e a Política de Privacidade.");
+        const { data, error: err } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: { name: name.trim() },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/chat`,
           },
         });
         if (err) throw err;
+        if (!data.session) {
+          setInfo(
+            "Conta criada! Enviamos um e-mail de confirmação. Confirme seu e-mail para entrar no chat.",
+          );
+          setPassword("");
+          return;
+        }
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -68,16 +80,21 @@ function AuthPage() {
       setError(
         /invalid login/i.test(msg)
           ? "E-mail ou senha incorretos."
-          : /already registered|already been/i.test(msg)
-            ? "Esse e-mail já tem conta. Faça login."
-            : /password/i.test(msg)
-              ? "Senha muito fraca ou curta (mínimo 6 caracteres)."
-              : msg,
+          : /email not confirmed/i.test(msg)
+            ? "Confirme seu e-mail pelo link que enviamos antes de entrar."
+            : /already registered|already been/i.test(msg)
+              ? "Esse e-mail já tem conta. Faça login."
+              : /pwned|compromised/i.test(msg)
+                ? "Essa senha apareceu em vazamentos. Escolha outra."
+                : /password/i.test(msg)
+                  ? "Senha muito fraca ou curta (mínimo 6 caracteres)."
+                  : msg,
       );
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
