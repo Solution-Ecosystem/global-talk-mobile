@@ -353,7 +353,7 @@ function Index() {
         </button>
 
         {/* Links legais */}
-      <footer className="mt-4 flex flex-col items-center gap-2 text-center">
+        <footer className="mt-2 flex flex-col items-center gap-2 text-center">
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <Link
               to="/termos-de-servico"
