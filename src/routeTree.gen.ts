@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosDeServicoRouteImport } from './routes/termos-de-servico'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
 import { Route as GaleriaRouteImport } from './routes/galeria'
 import { Route as FerramentasRouteImport } from './routes/ferramentas'
@@ -31,6 +32,11 @@ const TermosDeServicoRoute = TermosDeServicoRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PoliticaDePrivacidadeRoute = PoliticaDePrivacidadeRouteImport.update({
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
   '/chat': typeof AuthenticatedChatRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
   '/chat': typeof AuthenticatedChatRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
+    | '/recuperar-senha'
     | '/sitemap.xml'
     | '/termos-de-servico'
     | '/chat'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
+    | '/recuperar-senha'
     | '/sitemap.xml'
     | '/termos-de-servico'
     | '/chat'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
+    | '/recuperar-senha'
     | '/sitemap.xml'
     | '/termos-de-servico'
     | '/_authenticated/chat'
@@ -185,6 +197,7 @@ export interface RootRouteChildren {
   FerramentasRoute: typeof FerramentasRoute
   GaleriaRoute: typeof GaleriaRoute
   PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosDeServicoRoute: typeof TermosDeServicoRoute
   ApiPublicHooksCheckLiveRoute: typeof ApiPublicHooksCheckLiveRoute
@@ -206,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/politica-de-privacidade': {
@@ -308,6 +328,7 @@ const rootRouteChildren: RootRouteChildren = {
   FerramentasRoute: FerramentasRoute,
   GaleriaRoute: GaleriaRoute,
   PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosDeServicoRoute: TermosDeServicoRoute,
   ApiPublicHooksCheckLiveRoute: ApiPublicHooksCheckLiveRoute,
