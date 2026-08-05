@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, LogOut, Send, UserCheck } from "lucide-react";
+import { ArrowLeft, LogOut, Send, UserCheck, UserCog } from "lucide-react";
 import { getChatMessages, sendChatMessage, type ChatMessage } from "@/lib/chat.functions";
-import { getMyProfile, linkTikTok } from "@/lib/account.functions";
+import { getMyProfile, linkTikTok, acceptTerms } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/chat")({
@@ -38,14 +38,31 @@ function ChatPage() {
   const profileQuery = useQuery({ queryKey: ["app-profile"], queryFn: () => getMyProfile() });
   const profile = profileQuery.data?.profile ?? null;
   const linked = !!profile?.tiktok_username;
+  const termsOk = !!profile?.terms_accepted_at;
+
+  const [emailConfirmed, setEmailConfirmed] = useState(true);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setEmailConfirmed(!!data.user?.email_confirmed_at);
+    });
+  }, []);
+
+  const accept = useMutation({
+    mutationFn: () => acceptTerms(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["app-profile"] }),
+  });
+
+  const canChat = termsOk && emailConfirmed;
 
   const messagesQuery = useQuery({
     queryKey: ["chat-messages"],
     queryFn: () => getChatMessages(),
     refetchInterval: 5_000,
     refetchOnWindowFocus: true,
+    enabled: canChat,
   });
   const messages = useMemo(() => messagesQuery.data?.messages ?? [], [messagesQuery.data]);
+
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,7 +106,7 @@ function ChatPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
       <main className="w-full max-w-sm px-5 pt-6 pb-32 flex flex-col gap-4">
-        <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+        <header className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2">
           <Link
             to="/"
             aria-label="Voltar"
@@ -98,6 +115,13 @@ function ChatPage() {
             <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </Link>
           <h1 className="truncate text-lg font-semibold tracking-tight">Chat da Comunidade</h1>
+          <Link
+            to="/conta"
+            aria-label="Minha conta"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card/70 hover:bg-card transition"
+          >
+            <UserCog className="h-4 w-4 text-muted-foreground" />
+          </Link>
           <button
             onClick={signOut}
             aria-label="Sair"
@@ -106,6 +130,40 @@ function ChatPage() {
             <LogOut className="h-4 w-4 text-muted-foreground" />
           </button>
         </header>
+
+        {!emailConfirmed && (
+          <div className="rounded-2xl bg-card px-4 py-4">
+            <p className="text-sm font-semibold">Confirme seu e-mail</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Enviamos um link de confirmação para o seu e-mail. Confirme para liberar o chat.
+            </p>
+          </div>
+        )}
+
+        {emailConfirmed && profile && !termsOk && (
+          <div className="rounded-2xl bg-card px-4 py-4 flex flex-col gap-2">
+            <p className="text-sm font-semibold">Aceite os termos para entrar no chat</p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Para usar o chat você precisa aceitar os{" "}
+              <Link to="/termos-de-servico" className="text-primary">
+                Termos de Serviço
+              </Link>{" "}
+              e a{" "}
+              <Link to="/politica-de-privacidade" className="text-primary">
+                Política de Privacidade
+              </Link>
+              .
+            </p>
+            <button
+              onClick={() => accept.mutate()}
+              disabled={accept.isPending}
+              className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+            >
+              {accept.isPending ? "..." : "Aceitar e continuar"}
+            </button>
+          </div>
+        )}
+
 
         {profile && (
           <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3">
@@ -136,7 +194,7 @@ function ChatPage() {
           </div>
         )}
 
-        {profile && !linked && (
+        {canChat && profile && !linked && (
           <div className="rounded-2xl bg-card px-4 py-4 flex flex-col gap-2">
             <p className="text-sm font-semibold">Vincular TikTok</p>
             <p className="text-[11px] text-muted-foreground">
@@ -162,6 +220,7 @@ function ChatPage() {
           </div>
         )}
 
+        {canChat && (
         <div className="flex flex-col gap-3">
           {messages.length === 0 && (
             <p className="text-xs text-muted-foreground">
@@ -195,9 +254,10 @@ function ChatPage() {
           ))}
           <div ref={bottomRef} />
         </div>
+        )}
       </main>
 
-      {linked && (
+      {canChat && linked && (
         <div className="fixed bottom-0 left-1/2 w-full max-w-sm -translate-x-1/2 border-t border-border bg-card/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur">
           <div className="flex items-center gap-2">
             <input

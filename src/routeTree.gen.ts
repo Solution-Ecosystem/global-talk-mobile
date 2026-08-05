@@ -11,12 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosDeServicoRouteImport } from './routes/termos-de-servico'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
 import { Route as GaleriaRouteImport } from './routes/galeria'
 import { Route as FerramentasRouteImport } from './routes/ferramentas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as ApiPublicTiktokCallbackRouteImport } from './routes/api/public/tiktok/callback'
 import { Route as ApiPublicPushSubscribeRouteImport } from './routes/api/public/push/subscribe'
@@ -30,6 +33,16 @@ const TermosDeServicoRoute = TermosDeServicoRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PoliticaDePrivacidadeRoute = PoliticaDePrivacidadeRouteImport.update({
@@ -61,6 +74,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -88,9 +106,12 @@ export interface FileRoutesByFullPath {
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
   '/chat': typeof AuthenticatedChatRoute
+  '/conta': typeof AuthenticatedContaRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -101,9 +122,12 @@ export interface FileRoutesByTo {
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
   '/chat': typeof AuthenticatedChatRoute
+  '/conta': typeof AuthenticatedContaRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -116,9 +140,12 @@ export interface FileRoutesById {
   '/ferramentas': typeof FerramentasRoute
   '/galeria': typeof GaleriaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/termos-de-servico': typeof TermosDeServicoRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
+  '/_authenticated/conta': typeof AuthenticatedContaRoute
   '/api/public/hooks/check-live': typeof ApiPublicHooksCheckLiveRoute
   '/api/public/push/subscribe': typeof ApiPublicPushSubscribeRoute
   '/api/public/tiktok/callback': typeof ApiPublicTiktokCallbackRoute
@@ -131,9 +158,12 @@ export interface FileRouteTypes {
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
+    | '/recuperar-senha'
+    | '/redefinir-senha'
     | '/sitemap.xml'
     | '/termos-de-servico'
     | '/chat'
+    | '/conta'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
@@ -144,9 +174,12 @@ export interface FileRouteTypes {
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
+    | '/recuperar-senha'
+    | '/redefinir-senha'
     | '/sitemap.xml'
     | '/termos-de-servico'
     | '/chat'
+    | '/conta'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
@@ -158,9 +191,12 @@ export interface FileRouteTypes {
     | '/ferramentas'
     | '/galeria'
     | '/politica-de-privacidade'
+    | '/recuperar-senha'
+    | '/redefinir-senha'
     | '/sitemap.xml'
     | '/termos-de-servico'
     | '/_authenticated/chat'
+    | '/_authenticated/conta'
     | '/api/public/hooks/check-live'
     | '/api/public/push/subscribe'
     | '/api/public/tiktok/callback'
@@ -173,6 +209,8 @@ export interface RootRouteChildren {
   FerramentasRoute: typeof FerramentasRoute
   GaleriaRoute: typeof GaleriaRoute
   PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermosDeServicoRoute: typeof TermosDeServicoRoute
   ApiPublicHooksCheckLiveRoute: typeof ApiPublicHooksCheckLiveRoute
@@ -194,6 +232,20 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/politica-de-privacidade': {
@@ -238,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/conta': {
+      id: '/_authenticated/conta'
+      path: '/conta'
+      fullPath: '/conta'
+      preLoaderRoute: typeof AuthenticatedContaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chat': {
       id: '/_authenticated/chat'
       path: '/chat'
@@ -271,10 +330,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+  AuthenticatedContaRoute: typeof AuthenticatedContaRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRoute,
+  AuthenticatedContaRoute: AuthenticatedContaRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -287,6 +348,8 @@ const rootRouteChildren: RootRouteChildren = {
   FerramentasRoute: FerramentasRoute,
   GaleriaRoute: GaleriaRoute,
   PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermosDeServicoRoute: TermosDeServicoRoute,
   ApiPublicHooksCheckLiveRoute: ApiPublicHooksCheckLiveRoute,

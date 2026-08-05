@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          terms_accepted_at: string | null
           tiktok_avatar_url: string | null
           tiktok_display_name: string | null
           tiktok_username: string | null
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string
           id: string
           name?: string
+          terms_accepted_at?: string | null
           tiktok_avatar_url?: string | null
           tiktok_display_name?: string | null
           tiktok_username?: string | null
@@ -37,6 +39,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          terms_accepted_at?: string | null
           tiktok_avatar_url?: string | null
           tiktok_display_name?: string | null
           tiktok_username?: string | null

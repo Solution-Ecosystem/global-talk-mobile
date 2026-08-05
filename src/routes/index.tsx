@@ -351,6 +351,29 @@ function Index() {
           <p className="flex-1 text-sm font-semibold">Redes Sociais</p>
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </button>
+
+        {/* Links legais */}
+        <footer className="mt-2 flex flex-col items-center gap-2 text-center">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <Link
+              to="/termos-de-servico"
+              className="inline-flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-1.5 hover:bg-card transition"
+            >
+              <FileText className="h-3.5 w-3.5 text-primary" />
+              Termos de Serviço
+            </Link>
+            <Link
+              to="/politica-de-privacidade"
+              className="inline-flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-1.5 hover:bg-card transition"
+            >
+              <Shield className="h-3.5 w-3.5 text-primary" />
+              Privacidade
+            </Link>
+          </div>
+          <p className="text-[10px] text-muted-foreground/70">
+            APP TDC · fã-clube não oficial de @caiquevieira_
+          </p>
+        </footer>
       </main>
 
       {/* Sheet de redes sociais */}
@@ -394,28 +417,6 @@ function Index() {
         </div>
       )}
 
-      {/* Links legais */}
-      <footer className="mt-4 flex flex-col items-center gap-2 text-center">
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-          <Link
-            to="/termos-de-servico"
-            className="inline-flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-1.5 hover:bg-card transition"
-          >
-            <FileText className="h-3.5 w-3.5 text-primary" />
-            Termos de Serviço
-          </Link>
-          <Link
-            to="/politica-de-privacidade"
-            className="inline-flex items-center gap-1.5 rounded-full bg-card/70 px-3 py-1.5 hover:bg-card transition"
-          >
-            <Shield className="h-3.5 w-3.5 text-primary" />
-            Privacidade
-          </Link>
-        </div>
-        <p className="text-[10px] text-muted-foreground/70">
-          APP TDC · fã-clube não oficial de @caiquevieira_
-        </p>
-      </footer>
 
 
       {/* Bottom nav fixa */}

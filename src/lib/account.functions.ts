@@ -7,6 +7,7 @@ export type AppProfile = {
   tiktok_username: string | null;
   tiktok_display_name: string | null;
   tiktok_avatar_url: string | null;
+  terms_accepted_at: string | null;
 };
 
 const TIKTOK_HEADERS = {
@@ -26,7 +27,9 @@ export const getMyProfile = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("app_profiles")
-      .select("id, name, tiktok_username, tiktok_display_name, tiktok_avatar_url")
+      .select(
+        "id, name, tiktok_username, tiktok_display_name, tiktok_avatar_url, terms_accepted_at",
+      )
       .eq("id", context.userId)
       .maybeSingle();
     return { profile: (data ?? null) as AppProfile | null };
@@ -92,6 +95,18 @@ export const updateMyName = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("app_profiles")
       .update({ name: data.name })
+      .eq("id", context.userId);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
+/** Registra o aceite dos Termos de Serviço e da Política de Privacidade. */
+export const acceptTerms = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { error } = await context.supabase
+      .from("app_profiles")
+      .update({ terms_accepted_at: new Date().toISOString() })
       .eq("id", context.userId);
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };

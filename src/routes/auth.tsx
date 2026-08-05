@@ -30,7 +30,9 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -42,19 +44,29 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setInfo("");
     setLoading(true);
     try {
       if (mode === "signup") {
         if (name.trim().length < 2) throw new Error("Informe seu nome.");
-        const { error: err } = await supabase.auth.signUp({
+        if (!accepted)
+          throw new Error("Você precisa aceitar os Termos e a Política de Privacidade.");
+        const { data, error: err } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: { name: name.trim() },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/chat`,
           },
         });
         if (err) throw err;
+        if (!data.session) {
+          setInfo(
+            "Conta criada! Enviamos um e-mail de confirmação. Confirme seu e-mail para entrar no chat.",
+          );
+          setPassword("");
+          return;
+        }
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -68,16 +80,21 @@ function AuthPage() {
       setError(
         /invalid login/i.test(msg)
           ? "E-mail ou senha incorretos."
-          : /already registered|already been/i.test(msg)
-            ? "Esse e-mail já tem conta. Faça login."
-            : /password/i.test(msg)
-              ? "Senha muito fraca ou curta (mínimo 6 caracteres)."
-              : msg,
+          : /email not confirmed/i.test(msg)
+            ? "Confirme seu e-mail pelo link que enviamos antes de entrar."
+            : /already registered|already been/i.test(msg)
+              ? "Esse e-mail já tem conta. Faça login."
+              : /pwned|compromised/i.test(msg)
+                ? "Essa senha apareceu em vazamentos. Escolha outra."
+                : /password/i.test(msg)
+                  ? "Senha muito fraca ou curta (mínimo 6 caracteres)."
+                  : msg,
       );
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
@@ -152,20 +169,51 @@ function AuthPage() {
             />
           </label>
 
+          {mode === "signup" && (
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+              />
+              <span className="text-[11px] leading-relaxed text-muted-foreground">
+                Li e aceito os{" "}
+                <Link to="/termos-de-servico" className="text-primary">
+                  Termos de Serviço
+                </Link>{" "}
+                e a{" "}
+                <Link to="/politica-de-privacidade" className="text-primary">
+                  Política de Privacidade
+                </Link>
+                .
+              </span>
+            </label>
+          )}
+
           {error && <p className="text-[11px] text-destructive">{error}</p>}
+          {info && <p className="text-[11px] text-emerald-400">{info}</p>}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || (mode === "signup" && !accepted)}
             className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {mode === "login" ? "Entrar" : "Criar conta"}
           </button>
+          {mode === "login" && (
+            <Link to="/recuperar-senha" className="text-center text-[11px] text-primary">
+              Esqueci minha senha
+            </Link>
+          )}
           <p className="text-[11px] text-muted-foreground">
-            Depois de entrar, vincule seu @ do TikTok para poder falar no chat.
+            {mode === "signup"
+              ? "Confirme seu e-mail pelo link que enviaremos e depois vincule seu @ do TikTok para falar no chat."
+              : "Depois de entrar, vincule seu @ do TikTok para poder falar no chat."}
           </p>
         </form>
+
 
         <p className="text-center text-[11px] text-muted-foreground">
           Ao continuar você aceita os{" "}
