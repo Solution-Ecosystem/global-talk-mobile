@@ -181,7 +181,7 @@ function ChatPage() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">
                 {profile.name || "Sem nome"}
-                {linked && (
+                {canChat && linked && (
                   <span className="ml-1.5 font-normal text-muted-foreground">
                     @{profile.tiktok_username}
                   </span>
@@ -194,7 +194,7 @@ function ChatPage() {
           </div>
         )}
 
-        {profile && !linked && (
+        {canChat && profile && !linked && (
           <div className="rounded-2xl bg-card px-4 py-4 flex flex-col gap-2">
             <p className="text-sm font-semibold">Vincular TikTok</p>
             <p className="text-[11px] text-muted-foreground">
@@ -220,6 +220,7 @@ function ChatPage() {
           </div>
         )}
 
+        {canChat && (
         <div className="flex flex-col gap-3">
           {messages.length === 0 && (
             <p className="text-xs text-muted-foreground">
@@ -253,6 +254,7 @@ function ChatPage() {
           ))}
           <div ref={bottomRef} />
         </div>
+        )}
       </main>
 
       {linked && (
