@@ -99,3 +99,15 @@ export const updateMyName = createServerFn({ method: "POST" })
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };
   });
+
+/** Registra o aceite dos Termos de Serviço e da Política de Privacidade. */
+export const acceptTerms = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { error } = await context.supabase
+      .from("app_profiles")
+      .update({ terms_accepted_at: new Date().toISOString() })
+      .eq("id", context.userId);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
