@@ -106,7 +106,7 @@ function ChatPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
       <main className="w-full max-w-sm px-5 pt-6 pb-32 flex flex-col gap-4">
-        <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+        <header className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2">
           <Link
             to="/"
             aria-label="Voltar"
@@ -115,6 +115,13 @@ function ChatPage() {
             <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </Link>
           <h1 className="truncate text-lg font-semibold tracking-tight">Chat da Comunidade</h1>
+          <Link
+            to="/conta"
+            aria-label="Minha conta"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card/70 hover:bg-card transition"
+          >
+            <UserCog className="h-4 w-4 text-muted-foreground" />
+          </Link>
           <button
             onClick={signOut}
             aria-label="Sair"
@@ -123,6 +130,40 @@ function ChatPage() {
             <LogOut className="h-4 w-4 text-muted-foreground" />
           </button>
         </header>
+
+        {!emailConfirmed && (
+          <div className="rounded-2xl bg-card px-4 py-4">
+            <p className="text-sm font-semibold">Confirme seu e-mail</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Enviamos um link de confirmação para o seu e-mail. Confirme para liberar o chat.
+            </p>
+          </div>
+        )}
+
+        {emailConfirmed && profile && !termsOk && (
+          <div className="rounded-2xl bg-card px-4 py-4 flex flex-col gap-2">
+            <p className="text-sm font-semibold">Aceite os termos para entrar no chat</p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Para usar o chat você precisa aceitar os{" "}
+              <Link to="/termos-de-servico" className="text-primary">
+                Termos de Serviço
+              </Link>{" "}
+              e a{" "}
+              <Link to="/politica-de-privacidade" className="text-primary">
+                Política de Privacidade
+              </Link>
+              .
+            </p>
+            <button
+              onClick={() => accept.mutate()}
+              disabled={accept.isPending}
+              className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+            >
+              {accept.isPending ? "..." : "Aceitar e continuar"}
+            </button>
+          </div>
+        )}
+
 
         {profile && (
           <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3">
