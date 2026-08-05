@@ -38,14 +38,31 @@ function ChatPage() {
   const profileQuery = useQuery({ queryKey: ["app-profile"], queryFn: () => getMyProfile() });
   const profile = profileQuery.data?.profile ?? null;
   const linked = !!profile?.tiktok_username;
+  const termsOk = !!profile?.terms_accepted_at;
+
+  const [emailConfirmed, setEmailConfirmed] = useState(true);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setEmailConfirmed(!!data.user?.email_confirmed_at);
+    });
+  }, []);
+
+  const accept = useMutation({
+    mutationFn: () => acceptTerms(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["app-profile"] }),
+  });
+
+  const canChat = termsOk && emailConfirmed;
 
   const messagesQuery = useQuery({
     queryKey: ["chat-messages"],
     queryFn: () => getChatMessages(),
     refetchInterval: 5_000,
     refetchOnWindowFocus: true,
+    enabled: canChat,
   });
   const messages = useMemo(() => messagesQuery.data?.messages ?? [], [messagesQuery.data]);
+
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
