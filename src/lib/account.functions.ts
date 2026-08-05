@@ -7,6 +7,7 @@ export type AppProfile = {
   tiktok_username: string | null;
   tiktok_display_name: string | null;
   tiktok_avatar_url: string | null;
+  terms_accepted_at: string | null;
 };
 
 const TIKTOK_HEADERS = {
