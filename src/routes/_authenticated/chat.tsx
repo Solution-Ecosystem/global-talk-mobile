@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, LogOut, Send, UserCheck } from "lucide-react";
+import { ArrowLeft, LogOut, Send, UserCheck, UserCog } from "lucide-react";
 import { getChatMessages, sendChatMessage, type ChatMessage } from "@/lib/chat.functions";
-import { getMyProfile, linkTikTok } from "@/lib/account.functions";
+import { getMyProfile, linkTikTok, acceptTerms } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/chat")({
