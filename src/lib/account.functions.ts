@@ -27,7 +27,9 @@ export const getMyProfile = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("app_profiles")
-      .select("id, name, tiktok_username, tiktok_display_name, tiktok_avatar_url")
+      .select(
+        "id, name, tiktok_username, tiktok_display_name, tiktok_avatar_url, terms_accepted_at",
+      )
       .eq("id", context.userId)
       .maybeSingle();
     return { profile: (data ?? null) as AppProfile | null };
