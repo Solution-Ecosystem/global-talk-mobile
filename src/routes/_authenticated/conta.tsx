@@ -35,6 +35,8 @@ function AccountPage() {
   const [email, setEmail] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [emailConfirmed, setEmailConfirmed] = useState(true);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
@@ -46,8 +48,10 @@ function AccountPage() {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentEmail(data.user?.email ?? "");
       setEmail(data.user?.email ?? "");
+      setEmailConfirmed(Boolean(data.user?.email_confirmed_at));
     });
   }, []);
+
 
   function reset() {
     setMsg("");
