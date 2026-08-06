@@ -228,11 +228,68 @@ function AccountPage() {
           </button>
         </section>
 
-        {profile?.tiktok_username && (
-          <p className="text-center text-[11px] text-muted-foreground">
-            TikTok vinculado: @{profile.tiktok_username}
-          </p>
+        {!emailConfirmed && (
+          <section className="flex flex-col gap-2 rounded-2xl bg-card px-4 py-4">
+            <p className="flex items-center gap-2 text-sm font-semibold">
+              <MailCheck className="h-4 w-4 text-primary" /> Cadastro pendente
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Seu e-mail ainda não foi confirmado. Reenvie o link de verificação para liberar o
+              chat.
+            </p>
+            <button
+              onClick={() => resendVerification.mutate()}
+              disabled={resendVerification.isPending || !currentEmail}
+              className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+            >
+              {resendVerification.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Reenviar e-mail de verificação
+            </button>
+          </section>
         )}
+
+        <section className="flex flex-col gap-2 rounded-2xl bg-card px-4 py-4">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            <Music2 className="h-4 w-4 text-primary" /> Conta do TikTok
+          </p>
+          {profile?.tiktok_username ? (
+            <>
+              <p className="text-xs text-muted-foreground">
+                Vinculada: <span className="text-foreground">@{profile.tiktok_username}</span>
+              </p>
+              <button
+                onClick={() => unlink.mutate()}
+                disabled={busy}
+                className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-background/60 px-3 py-2 text-sm font-semibold disabled:opacity-50"
+              >
+                {unlink.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Desvincular TikTok
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-[11px] text-muted-foreground">
+                Vincule um @ do TikTok para voltar a usar o chat.
+              </p>
+              <input
+                value={tiktok}
+                maxLength={25}
+                onChange={(e) => setTiktok(e.target.value)}
+                placeholder="@seuusuario"
+                className="rounded-xl bg-background/60 px-3 py-2 text-sm outline-none"
+              />
+              <button
+                onClick={() => link.mutate()}
+                disabled={busy || tiktok.trim().replace(/^@/, "").length < 2}
+                className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                {link.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Vincular TikTok
+              </button>
+            </>
+          )}
+        </section>
+
       </main>
     </div>
   );
