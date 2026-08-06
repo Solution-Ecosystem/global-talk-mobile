@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { getMyProfile, updateMyName } from "@/lib/account.functions";
+import { ArrowLeft, Loader2, MailCheck, Music2 } from "lucide-react";
+import { getMyProfile, updateMyName, linkTikTok, unlinkTikTok } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/conta")({
@@ -35,6 +35,8 @@ function AccountPage() {
   const [email, setEmail] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [emailConfirmed, setEmailConfirmed] = useState(true);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
@@ -46,8 +48,10 @@ function AccountPage() {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentEmail(data.user?.email ?? "");
       setEmail(data.user?.email ?? "");
+      setEmailConfirmed(Boolean(data.user?.email_confirmed_at));
     });
   }, []);
+
 
   function reset() {
     setMsg("");
@@ -91,7 +95,60 @@ function AccountPage() {
     onError: (e) => setErr(e instanceof Error ? e.message : "Erro ao atualizar a senha."),
   });
 
-  const busy = saveName.isPending || saveEmail.isPending || savePassword.isPending;
+  const resendVerification = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: currentEmail,
+        options: { emailRedirectTo: `${window.location.origin}/chat` },
+      });
+      if (error) throw error;
+    },
+    onMutate: reset,
+    onSuccess: () => setMsg("Reenviamos o e-mail de verificação. Confira sua caixa de entrada."),
+    onError: (e) =>
+      setErr(e instanceof Error ? e.message : "Erro ao reenviar o e-mail de verificação."),
+  });
+
+  const link = useMutation({
+    mutationFn: () => linkTikTok({ data: { username: tiktok.trim() } }),
+    onMutate: reset,
+    onSuccess: (res) => {
+      if (!res.ok) {
+        setErr(
+          res.error === "conta_nao_encontrada"
+            ? "Conta do TikTok não encontrada."
+            : res.error === "ja_vinculado"
+              ? "Esse @ já está vinculado a outra conta."
+              : "Não foi possível vincular agora. Tente novamente.",
+        );
+        return;
+      }
+      setTiktok("");
+      setMsg("Conta do TikTok vinculada.");
+      qc.invalidateQueries({ queryKey: ["app-profile"] });
+    },
+    onError: () => setErr("@ inválido."),
+  });
+
+  const unlink = useMutation({
+    mutationFn: () => unlinkTikTok(),
+    onMutate: reset,
+    onSuccess: (res) => {
+      if (!res.ok) return setErr("Não foi possível desvincular.");
+      setMsg("Conta do TikTok desvinculada. Vincule um novo @ para voltar ao chat.");
+      qc.invalidateQueries({ queryKey: ["app-profile"] });
+    },
+    onError: () => setErr("Não foi possível desvincular."),
+  });
+
+  const busy =
+    saveName.isPending ||
+    saveEmail.isPending ||
+    savePassword.isPending ||
+    link.isPending ||
+    unlink.isPending;
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
@@ -171,11 +228,68 @@ function AccountPage() {
           </button>
         </section>
 
-        {profile?.tiktok_username && (
-          <p className="text-center text-[11px] text-muted-foreground">
-            TikTok vinculado: @{profile.tiktok_username}
-          </p>
+        {!emailConfirmed && (
+          <section className="flex flex-col gap-2 rounded-2xl bg-card px-4 py-4">
+            <p className="flex items-center gap-2 text-sm font-semibold">
+              <MailCheck className="h-4 w-4 text-primary" /> Cadastro pendente
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Seu e-mail ainda não foi confirmado. Reenvie o link de verificação para liberar o
+              chat.
+            </p>
+            <button
+              onClick={() => resendVerification.mutate()}
+              disabled={resendVerification.isPending || !currentEmail}
+              className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+            >
+              {resendVerification.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Reenviar e-mail de verificação
+            </button>
+          </section>
         )}
+
+        <section className="flex flex-col gap-2 rounded-2xl bg-card px-4 py-4">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            <Music2 className="h-4 w-4 text-primary" /> Conta do TikTok
+          </p>
+          {profile?.tiktok_username ? (
+            <>
+              <p className="text-xs text-muted-foreground">
+                Vinculada: <span className="text-foreground">@{profile.tiktok_username}</span>
+              </p>
+              <button
+                onClick={() => unlink.mutate()}
+                disabled={busy}
+                className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-background/60 px-3 py-2 text-sm font-semibold disabled:opacity-50"
+              >
+                {unlink.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Desvincular TikTok
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-[11px] text-muted-foreground">
+                Vincule um @ do TikTok para voltar a usar o chat.
+              </p>
+              <input
+                value={tiktok}
+                maxLength={25}
+                onChange={(e) => setTiktok(e.target.value)}
+                placeholder="@seuusuario"
+                className="rounded-xl bg-background/60 px-3 py-2 text-sm outline-none"
+              />
+              <button
+                onClick={() => link.mutate()}
+                disabled={busy || tiktok.trim().replace(/^@/, "").length < 2}
+                className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                {link.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Vincular TikTok
+              </button>
+            </>
+          )}
+        </section>
+
       </main>
     </div>
   );

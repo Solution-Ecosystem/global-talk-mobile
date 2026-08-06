@@ -83,6 +83,22 @@ export const linkTikTok = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/** Desvincula a conta do TikTok do usuário logado. */
+export const unlinkTikTok = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { error } = await context.supabase
+      .from("app_profiles")
+      .update({
+        tiktok_username: null,
+        tiktok_display_name: null,
+        tiktok_avatar_url: null,
+      })
+      .eq("id", context.userId);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
 /** Atualiza o nome exibido no chat. */
 export const updateMyName = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
