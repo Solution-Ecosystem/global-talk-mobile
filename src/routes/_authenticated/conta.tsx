@@ -95,7 +95,60 @@ function AccountPage() {
     onError: (e) => setErr(e instanceof Error ? e.message : "Erro ao atualizar a senha."),
   });
 
-  const busy = saveName.isPending || saveEmail.isPending || savePassword.isPending;
+  const resendVerification = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: currentEmail,
+        options: { emailRedirectTo: `${window.location.origin}/chat` },
+      });
+      if (error) throw error;
+    },
+    onMutate: reset,
+    onSuccess: () => setMsg("Reenviamos o e-mail de verificação. Confira sua caixa de entrada."),
+    onError: (e) =>
+      setErr(e instanceof Error ? e.message : "Erro ao reenviar o e-mail de verificação."),
+  });
+
+  const link = useMutation({
+    mutationFn: () => linkTikTok({ data: { username: tiktok.trim() } }),
+    onMutate: reset,
+    onSuccess: (res) => {
+      if (!res.ok) {
+        setErr(
+          res.error === "conta_nao_encontrada"
+            ? "Conta do TikTok não encontrada."
+            : res.error === "ja_vinculado"
+              ? "Esse @ já está vinculado a outra conta."
+              : "Não foi possível vincular agora. Tente novamente.",
+        );
+        return;
+      }
+      setTiktok("");
+      setMsg("Conta do TikTok vinculada.");
+      qc.invalidateQueries({ queryKey: ["app-profile"] });
+    },
+    onError: () => setErr("@ inválido."),
+  });
+
+  const unlink = useMutation({
+    mutationFn: () => unlinkTikTok(),
+    onMutate: reset,
+    onSuccess: (res) => {
+      if (!res.ok) return setErr("Não foi possível desvincular.");
+      setMsg("Conta do TikTok desvinculada. Vincule um novo @ para voltar ao chat.");
+      qc.invalidateQueries({ queryKey: ["app-profile"] });
+    },
+    onError: () => setErr("Não foi possível desvincular."),
+  });
+
+  const busy =
+    saveName.isPending ||
+    saveEmail.isPending ||
+    savePassword.isPending ||
+    link.isPending ||
+    unlink.isPending;
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
