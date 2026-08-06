@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { getMyProfile, updateMyName } from "@/lib/account.functions";
+import { ArrowLeft, Loader2, MailCheck, Music2 } from "lucide-react";
+import { getMyProfile, updateMyName, linkTikTok, unlinkTikTok } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/conta")({
