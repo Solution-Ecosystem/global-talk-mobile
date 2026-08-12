@@ -106,6 +106,8 @@ function FerramentasPage() {
           <h1 className="truncate text-lg font-semibold tracking-tight">Ferramentas da Live</h1>
         </header>
 
+        <p className="text-[11px] text-muted-foreground">{syncStatus}</p>
+
         {isLoading && <p className="text-xs text-muted-foreground">Carregando ferramentas...</p>}
 
         {LIVE_TOOLS.map((t) => {
