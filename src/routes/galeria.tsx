@@ -46,10 +46,6 @@ function GaleriaPage() {
     }
   }, [autoSync.data, qc]);
 
-  const [adminOpen, setAdminOpen] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState("");
-
   const current = data?.currentGallery ?? "D";
   const league = data?.league ?? null;
   const items = useMemo(
@@ -58,41 +54,6 @@ function GaleriaPage() {
   );
   const lit = items.filter((i) => i.lit).length;
 
-  const mutation = useMutation({
-    mutationFn: (vars: Parameters<typeof updateGifts>[0]["data"]) => updateGifts({ data: vars }),
-    onSuccess: (res) => {
-      if (!res.ok) {
-        setPinError("PIN incorreto");
-        return;
-      }
-      setPinError("");
-      qc.invalidateQueries({ queryKey: ["gifts"] });
-    },
-  });
-
-  const [syncMsg, setSyncMsg] = useState("");
-  const sync = useMutation({
-    mutationFn: () => syncGiftsFromTikTok({ data: {} }),
-    onSuccess: (res) => {
-      if (!res.ok) {
-        setSyncMsg(
-          res.error === "sem_sala_ativa"
-            ? "O streamer não está ao vivo agora, então a galeria não pode ser lida."
-            : res.error === "galeria_indisponivel"
-              ? "A live não expôs a galeria neste momento."
-              : `Falha ao sincronizar: ${res.error}`,
-        );
-        return;
-      }
-      setSyncMsg(
-        `Galeria ${res.gallery}${res.league ? ` (liga ${res.league})` : ""}: ${res.lit}/${res.imported} iluminados.`,
-      );
-      qc.invalidateQueries({ queryKey: ["gifts"] });
-    },
-    onError: () => setSyncMsg("Falha ao sincronizar com o TikTok."),
-  });
-
-  const isAdmin = adminOpen && pin.length >= 3 && !pinError;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
@@ -195,30 +156,3 @@ function GiftCard({ item }: { item: GiftItem }) {
   );
 }
 
-function SponsorNameInput({
-  item,
-  onSave,
-}: {
-  item: GiftItem;
-  onSave: (name: string) => void;
-}) {
-  const [value, setValue] = useState(item.sponsor_name ?? "");
-  return (
-    <div className="flex items-center gap-2">
-      <input
-        value={value}
-        maxLength={60}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="@usuario do TikTok ou nome"
-        className="min-w-0 flex-1 rounded-lg bg-background/60 px-2 py-1 text-[11px] outline-none"
-      />
-
-      <button
-        onClick={() => onSave(value)}
-        className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
-      >
-        Salvar
-      </button>
-    </div>
-  );
-}
