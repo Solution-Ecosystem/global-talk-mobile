@@ -1,13 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gift, Sparkles, Lock, Trash2, RefreshCw } from "lucide-react";
-import {
-  getGifts,
-  updateGifts,
-  syncGiftsFromTikTok,
-  type GiftItem,
-} from "@/lib/gifts.functions";
+import { useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Gift, Sparkles } from "lucide-react";
+import { getGifts, syncGiftsFromTikTok, type GiftItem } from "@/lib/gifts.functions";
 
 export const Route = createFileRoute("/galeria")({
   head: () => ({
@@ -51,10 +46,6 @@ function GaleriaPage() {
     }
   }, [autoSync.data, qc]);
 
-  const [adminOpen, setAdminOpen] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState("");
-
   const current = data?.currentGallery ?? "D";
   const league = data?.league ?? null;
   const items = useMemo(
@@ -63,41 +54,6 @@ function GaleriaPage() {
   );
   const lit = items.filter((i) => i.lit).length;
 
-  const mutation = useMutation({
-    mutationFn: (vars: Parameters<typeof updateGifts>[0]["data"]) => updateGifts({ data: vars }),
-    onSuccess: (res) => {
-      if (!res.ok) {
-        setPinError("PIN incorreto");
-        return;
-      }
-      setPinError("");
-      qc.invalidateQueries({ queryKey: ["gifts"] });
-    },
-  });
-
-  const [syncMsg, setSyncMsg] = useState("");
-  const sync = useMutation({
-    mutationFn: () => syncGiftsFromTikTok({ data: {} }),
-    onSuccess: (res) => {
-      if (!res.ok) {
-        setSyncMsg(
-          res.error === "sem_sala_ativa"
-            ? "O streamer não está ao vivo agora, então a galeria não pode ser lida."
-            : res.error === "galeria_indisponivel"
-              ? "A live não expôs a galeria neste momento."
-              : `Falha ao sincronizar: ${res.error}`,
-        );
-        return;
-      }
-      setSyncMsg(
-        `Galeria ${res.gallery}${res.league ? ` (liga ${res.league})` : ""}: ${res.lit}/${res.imported} iluminados.`,
-      );
-      qc.invalidateQueries({ queryKey: ["gifts"] });
-    },
-    onError: () => setSyncMsg("Falha ao sincronizar com o TikTok."),
-  });
-
-  const isAdmin = adminOpen && pin.length >= 3 && !pinError;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex justify-center">
@@ -143,85 +99,10 @@ function GaleriaPage() {
           </p>
         )}
 
-        {isAdmin && (
-          <div className="flex flex-col gap-2">
-            {items.map((item) => (
-              <div key={item.id} className="flex flex-col gap-2 rounded-xl bg-card px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <p className="min-w-0 flex-1 truncate text-xs">{item.name}</p>
-                  <button
-                    onClick={() => mutation.mutate({ pin, toggle: { id: item.id, lit: !item.lit } })}
-                    className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
-                  >
-                    {item.lit ? "Apagar" : "Iluminar"}
-                  </button>
-                  <button
-                    aria-label={`Remover ${item.name}`}
-                    onClick={() => mutation.mutate({ pin, remove: { id: item.id } })}
-                    className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-background/60 text-muted-foreground"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-                {item.lit && (
-                  <SponsorNameInput
-                    item={item}
-                    onSave={(name) =>
-                      mutation.mutate({ pin, sponsorName: { id: item.id, name } })
-                    }
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-
-        {/* Área do administrador */}
-        <div className="rounded-2xl bg-card px-4 py-3.5 flex flex-col gap-3">
-          <button
-            onClick={() => setAdminOpen((v) => !v)}
-            className="flex items-center gap-3 text-left"
-          >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background/60">
-              <Lock className="h-4 w-4 text-muted-foreground" />
-            </span>
-            <p className="flex-1 text-sm font-semibold">Área do administrador</p>
-          </button>
-
-          {adminOpen && (
-            <div className="flex flex-col gap-2">
-              <input
-                type="password"
-                inputMode="numeric"
-                value={pin}
-                onChange={(e) => {
-                  setPin(e.target.value);
-                  setPinError("");
-                }}
-                placeholder="PIN de administrador"
-                className="rounded-xl bg-background/60 px-3 py-2 text-sm outline-none"
-              />
-              {pinError && <p className="text-[11px] text-destructive">{pinError}</p>}
-              <button
-                onClick={() => {
-                  setSyncMsg("");
-                  sync.mutate();
-                }}
-                disabled={sync.isPending}
-                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-              >
-                <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} />
-                {sync.isPending ? "Sincronizando..." : "Atualizar galeria agora"}
-              </button>
-              {syncMsg && <p className="text-[11px] text-muted-foreground">{syncMsg}</p>}
-              <p className="text-[11px] text-muted-foreground">
-                A galeria mostrada é sempre a galeria atual do streamer no TikTok e se atualiza
-                sozinha a cada 1 minuto enquanto a live estiver no ar.
-              </p>
-            </div>
-          )}
-        </div>
+        <p className="text-[11px] text-muted-foreground">
+          A galeria mostrada é sempre a galeria atual do streamer no TikTok e se atualiza sozinha a
+          cada 1 minuto enquanto a live estiver no ar.
+        </p>
       </main>
     </div>
   );
@@ -275,30 +156,3 @@ function GiftCard({ item }: { item: GiftItem }) {
   );
 }
 
-function SponsorNameInput({
-  item,
-  onSave,
-}: {
-  item: GiftItem;
-  onSave: (name: string) => void;
-}) {
-  const [value, setValue] = useState(item.sponsor_name ?? "");
-  return (
-    <div className="flex items-center gap-2">
-      <input
-        value={value}
-        maxLength={60}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="@usuario do TikTok ou nome"
-        className="min-w-0 flex-1 rounded-lg bg-background/60 px-2 py-1 text-[11px] outline-none"
-      />
-
-      <button
-        onClick={() => onSave(value)}
-        className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
-      >
-        Salvar
-      </button>
-    </div>
-  );
-}

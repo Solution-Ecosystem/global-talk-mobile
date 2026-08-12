@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Hammer, Lock, Trash2, Wind, Zap, Hand } from "lucide-react";
 import {
   getLiveTools,
   updateLiveTools,
+  syncLiveToolsFromTikTok,
   LIVE_TOOLS,
   type LiveTool,
   type LiveToolEntry,
@@ -47,6 +48,26 @@ function FerramentasPage() {
   });
   const entries = data?.entries ?? [];
 
+  const autoSync = useQuery({
+    queryKey: ["live-tools-sync"],
+    queryFn: () => syncLiveToolsFromTikTok({ data: {} }),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    if (autoSync.data?.ok) qc.invalidateQueries({ queryKey: ["live-tools"] });
+  }, [autoSync.data, qc]);
+
+  const syncStatus = !autoSync.data
+    ? "Sincronizando com a live do TikTok..."
+    : autoSync.data.ok
+      ? `Sincronizado com a live agora (${autoSync.data.imported} ferramenta(s) detectada(s)).`
+      : autoSync.data.error === "sem_sala_ativa"
+        ? "O streamer não está ao vivo — mostrando a última lista."
+        : "A live não expôs as ferramentas agora — mostrando a lista dos administradores.";
+
+
   const [adminOpen, setAdminOpen] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
@@ -84,6 +105,8 @@ function FerramentasPage() {
           </Link>
           <h1 className="truncate text-lg font-semibold tracking-tight">Ferramentas da Live</h1>
         </header>
+
+        <p className="text-[11px] text-muted-foreground">{syncStatus}</p>
 
         {isLoading && <p className="text-xs text-muted-foreground">Carregando ferramentas...</p>}
 
