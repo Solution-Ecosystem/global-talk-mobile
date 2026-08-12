@@ -371,7 +371,7 @@ function Index() {
             </Link>
           </div>
           <p className="text-[10px] text-muted-foreground/70">
-            APP TDC · fã-clube não oficial de @caiquevieira_
+            APP TDC · fã-clube oficial de @caiquevieira_
           </p>
         </footer>
       </main>

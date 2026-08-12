@@ -143,85 +143,10 @@ function GaleriaPage() {
           </p>
         )}
 
-        {isAdmin && (
-          <div className="flex flex-col gap-2">
-            {items.map((item) => (
-              <div key={item.id} className="flex flex-col gap-2 rounded-xl bg-card px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <p className="min-w-0 flex-1 truncate text-xs">{item.name}</p>
-                  <button
-                    onClick={() => mutation.mutate({ pin, toggle: { id: item.id, lit: !item.lit } })}
-                    className="rounded-lg bg-background/60 px-2 py-1 text-[11px]"
-                  >
-                    {item.lit ? "Apagar" : "Iluminar"}
-                  </button>
-                  <button
-                    aria-label={`Remover ${item.name}`}
-                    onClick={() => mutation.mutate({ pin, remove: { id: item.id } })}
-                    className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-background/60 text-muted-foreground"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-                {item.lit && (
-                  <SponsorNameInput
-                    item={item}
-                    onSave={(name) =>
-                      mutation.mutate({ pin, sponsorName: { id: item.id, name } })
-                    }
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-
-        {/* Área do administrador */}
-        <div className="rounded-2xl bg-card px-4 py-3.5 flex flex-col gap-3">
-          <button
-            onClick={() => setAdminOpen((v) => !v)}
-            className="flex items-center gap-3 text-left"
-          >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background/60">
-              <Lock className="h-4 w-4 text-muted-foreground" />
-            </span>
-            <p className="flex-1 text-sm font-semibold">Área do administrador</p>
-          </button>
-
-          {adminOpen && (
-            <div className="flex flex-col gap-2">
-              <input
-                type="password"
-                inputMode="numeric"
-                value={pin}
-                onChange={(e) => {
-                  setPin(e.target.value);
-                  setPinError("");
-                }}
-                placeholder="PIN de administrador"
-                className="rounded-xl bg-background/60 px-3 py-2 text-sm outline-none"
-              />
-              {pinError && <p className="text-[11px] text-destructive">{pinError}</p>}
-              <button
-                onClick={() => {
-                  setSyncMsg("");
-                  sync.mutate();
-                }}
-                disabled={sync.isPending}
-                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-              >
-                <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} />
-                {sync.isPending ? "Sincronizando..." : "Atualizar galeria agora"}
-              </button>
-              {syncMsg && <p className="text-[11px] text-muted-foreground">{syncMsg}</p>}
-              <p className="text-[11px] text-muted-foreground">
-                A galeria mostrada é sempre a galeria atual do streamer no TikTok e se atualiza
-                sozinha a cada 1 minuto enquanto a live estiver no ar.
-              </p>
-            </div>
-          )}
-        </div>
+        <p className="text-[11px] text-muted-foreground">
+          A galeria mostrada é sempre a galeria atual do streamer no TikTok e se atualiza sozinha a
+          cada 1 minuto enquanto a live estiver no ar.
+        </p>
       </main>
     </div>
   );
