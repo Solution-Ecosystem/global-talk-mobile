@@ -109,15 +109,10 @@ function GaleriaPage() {
 }
 
 function GiftCard({ item }: { item: GiftItem }) {
-  const sponsor =
-    item.sponsor_name?.trim() ||
-    (item.sponsor_id ? `Fã #${item.sponsor_id.slice(-4)}` : "Iluminado");
-
-
   return (
     <div
       className={`flex flex-col overflow-hidden rounded-2xl ${
-        item.lit ? "bg-card ring-1 ring-primary/30" : "bg-card/50"
+        item.lit ? "bg-card ring-1 ring-primary/40" : "bg-card/50"
       }`}
     >
       <div className="flex flex-col items-center gap-1.5 px-2 pt-3 pb-2">
@@ -143,16 +138,15 @@ function GiftCard({ item }: { item: GiftItem }) {
           {item.name}
         </p>
       </div>
-      <div className="mt-auto flex min-h-9 items-center justify-center gap-1 bg-background/50 px-2 py-1.5">
-        {item.lit ? (
-          <p className="truncate text-[10px] text-muted-foreground">{sponsor}</p>
-        ) : (
+      {!item.lit && (
+        <div className="mt-auto flex min-h-9 items-center justify-center bg-background/50 px-2 py-1.5">
           <p className="text-[10px] text-muted-foreground">
             <span className="text-xs font-bold text-foreground">{item.remaining}</span> para iluminar
           </p>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
