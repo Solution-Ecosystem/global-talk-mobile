@@ -48,6 +48,26 @@ function FerramentasPage() {
   });
   const entries = data?.entries ?? [];
 
+  const autoSync = useQuery({
+    queryKey: ["live-tools-sync"],
+    queryFn: () => syncLiveToolsFromTikTok({ data: {} }),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    if (autoSync.data?.ok) qc.invalidateQueries({ queryKey: ["live-tools"] });
+  }, [autoSync.data, qc]);
+
+  const syncStatus = !autoSync.data
+    ? "Sincronizando com a live do TikTok..."
+    : autoSync.data.ok
+      ? `Sincronizado com a live agora (${autoSync.data.imported} ferramenta(s) detectada(s)).`
+      : autoSync.data.error === "sem_sala_ativa"
+        ? "O streamer não está ao vivo — mostrando a última lista."
+        : "A live não expôs as ferramentas agora — mostrando a lista dos administradores.";
+
+
   const [adminOpen, setAdminOpen] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
