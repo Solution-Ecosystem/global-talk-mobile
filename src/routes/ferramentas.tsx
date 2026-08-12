@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Hammer, Lock, Trash2, Wind, Zap, Hand } from "lucide-react";
 import {
   getLiveTools,
   updateLiveTools,
+  syncLiveToolsFromTikTok,
   LIVE_TOOLS,
   type LiveTool,
   type LiveToolEntry,
