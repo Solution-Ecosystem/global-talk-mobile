@@ -94,6 +94,12 @@ function Index() {
       window.navigator.standalone === true;
     setIsIOS(ios);
     setIsStandalone(!!standalone);
+    let dismissed = false;
+    try {
+      dismissed = localStorage.getItem("tdc:install-gate") === "1";
+    } catch {}
+    if (!standalone && !dismissed) setShowInstallGate(true);
+
 
     if (!("Notification" in window)) return;
     setNotifyPerm(Notification.permission);
