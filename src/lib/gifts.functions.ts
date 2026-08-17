@@ -166,25 +166,15 @@ export const syncGiftsFromTikTok = createServerFn({ method: "POST" })
         .map((e) => [e.tiktok_gift_id as string, e.sponsor_name as string] as const),
     );
 
-    // Remove apenas itens de galerias antigas (quando o streamer muda de liga).
-    // Itens da galeria atual que saíram da API (normalmente porque já foram
-    // totalmente iluminados) são mantidos e marcados como iluminados.
+    // A galeria mostrada é sempre um espelho exato da API do TikTok:
+    // qualquer item que não venha na resposta atual é removido
+    // (galerias antigas ou presentes que saíram da galeria).
+    const currentIds = new Set(payload.map((p) => p.tiktok_gift_id));
     const staleIds = (existing ?? [])
-      .filter((e) => e.gallery !== gallery)
+      .filter((e) => e.gallery !== gallery || !e.tiktok_gift_id || !currentIds.has(e.tiktok_gift_id))
       .map((e) => e.id);
     if (staleIds.length > 0) {
       await supabaseAdmin.from("gift_items").delete().in("id", staleIds);
-    }
-
-    const currentIds = new Set(payload.map((p) => p.tiktok_gift_id));
-    const completedIds = (existing ?? [])
-      .filter((e) => e.gallery === gallery && e.tiktok_gift_id && !currentIds.has(e.tiktok_gift_id))
-      .map((e) => e.id);
-    if (completedIds.length > 0) {
-      await supabaseAdmin
-        .from("gift_items")
-        .update({ lit: true, remaining: 0 })
-        .in("id", completedIds);
     }
 
     const { error } = await supabaseAdmin.from("gift_items").upsert(
