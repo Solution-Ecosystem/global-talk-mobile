@@ -48,6 +48,40 @@ function Index() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true);
   const [pushReady, setPushReady] = useState(false);
+  const [showInstallGate, setShowInstallGate] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", onPrompt);
+  }, []);
+
+  const installApp = async () => {
+    if (installPrompt) {
+      try {
+        installPrompt.prompt();
+        await installPrompt.userChoice;
+      } catch {}
+      setInstallPrompt(null);
+    }
+    setShowInstallGate(false);
+    try {
+      localStorage.setItem("tdc:install-gate", "1");
+    } catch {}
+  };
+
+  const skipInstall = () => {
+    setShowInstallGate(false);
+    try {
+      localStorage.setItem("tdc:install-gate", "1");
+    } catch {}
+  };
+
 
   // Detecta permissão e ambiente apenas no cliente (evita hydration mismatch)
   useEffect(() => {
