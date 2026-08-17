@@ -232,6 +232,37 @@ function Index() {
           />
         </div>
       )}
+
+      {!showSplash && showInstallGate && (
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 bg-background px-8 text-center">
+          <img src={tdcLogo} alt="APP TDC" className="w-32 h-32 object-contain" />
+          <div>
+            <h2 className="text-xl font-bold">Instalar o APP TDC</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isIOS
+                ? "No Safari, toque em Compartilhar → Adicionar à Tela de Início para instalar o app."
+                : "Instale o app na tela inicial do seu dispositivo para receber as notificações da live."}
+            </p>
+          </div>
+          <div className="flex w-full max-w-xs flex-col gap-2">
+            {!isIOS && (
+              <button
+                onClick={installApp}
+                className="rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground"
+              >
+                Baixar aplicativo
+              </button>
+            )}
+            <button
+              onClick={skipInstall}
+              className="rounded-2xl bg-card px-4 py-3.5 text-sm font-semibold text-foreground"
+            >
+              Continuar no navegador
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="w-full max-w-sm px-5 pt-6 pb-28 flex flex-col gap-4">
         {/* Header */}
         <header className="flex items-center justify-between">
