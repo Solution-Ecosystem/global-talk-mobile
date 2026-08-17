@@ -425,20 +425,27 @@ function Index() {
         className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-card/95 backdrop-blur border-t border-border pb-[env(safe-area-inset-bottom)]"
       >
         <div className="grid grid-cols-4 px-6 py-3">
-          <button className="grid place-items-center text-foreground" aria-label="Início">
+          <Link to="/" className="grid place-items-center text-foreground" aria-label="Início">
             <Home className="h-5 w-5" />
-          </button>
-          <button className="grid place-items-center text-muted-foreground" aria-label="Placeholder">
-            <span className="h-4 w-4 rounded-sm bg-muted-foreground/60" />
-          </button>
-          <button className="grid place-items-center text-muted-foreground" aria-label="Placeholder">
-            <span className="h-4 w-4 rounded-sm bg-muted-foreground/60" />
-          </button>
-          <button className="grid place-items-center text-muted-foreground" aria-label="Placeholder">
-            <span className="h-4 w-4 rounded-sm bg-muted-foreground/60" />
-          </button>
+          </Link>
+          <Link to="/galeria" className="grid place-items-center text-muted-foreground hover:text-foreground transition" aria-label="Galeria">
+            <ImageIcon className="h-5 w-5" />
+          </Link>
+          <Link to="/chat" className="grid place-items-center text-muted-foreground hover:text-foreground transition" aria-label="Chat">
+            <MessageCircle className="h-5 w-5" />
+          </Link>
+          <a
+            href={STREAMER.coinsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="grid place-items-center text-muted-foreground hover:text-foreground transition"
+            aria-label="Comprar moedas"
+          >
+            <Coins className="h-5 w-5" />
+          </a>
         </div>
       </nav>
+
     </div>
   );
 }
