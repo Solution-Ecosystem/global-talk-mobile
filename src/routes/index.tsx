@@ -48,6 +48,40 @@ function Index() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true);
   const [pushReady, setPushReady] = useState(false);
+  const [showInstallGate, setShowInstallGate] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", onPrompt);
+  }, []);
+
+  const installApp = async () => {
+    if (installPrompt) {
+      try {
+        installPrompt.prompt();
+        await installPrompt.userChoice;
+      } catch {}
+      setInstallPrompt(null);
+    }
+    setShowInstallGate(false);
+    try {
+      localStorage.setItem("tdc:install-gate", "1");
+    } catch {}
+  };
+
+  const skipInstall = () => {
+    setShowInstallGate(false);
+    try {
+      localStorage.setItem("tdc:install-gate", "1");
+    } catch {}
+  };
+
 
   // Detecta permissão e ambiente apenas no cliente (evita hydration mismatch)
   useEffect(() => {
@@ -60,6 +94,12 @@ function Index() {
       window.navigator.standalone === true;
     setIsIOS(ios);
     setIsStandalone(!!standalone);
+    let dismissed = false;
+    try {
+      dismissed = localStorage.getItem("tdc:install-gate") === "1";
+    } catch {}
+    if (!standalone && !dismissed) setShowInstallGate(true);
+
 
     if (!("Notification" in window)) return;
     setNotifyPerm(Notification.permission);
@@ -192,6 +232,37 @@ function Index() {
           />
         </div>
       )}
+
+      {!showSplash && showInstallGate && (
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 bg-background px-8 text-center">
+          <img src={tdcLogo} alt="APP TDC" className="w-32 h-32 object-contain" />
+          <div>
+            <h2 className="text-xl font-bold">Instalar o APP TDC</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isIOS
+                ? "No Safari, toque em Compartilhar → Adicionar à Tela de Início para instalar o app."
+                : "Instale o app na tela inicial do seu dispositivo para receber as notificações da live."}
+            </p>
+          </div>
+          <div className="flex w-full max-w-xs flex-col gap-2">
+            {!isIOS && (
+              <button
+                onClick={installApp}
+                className="rounded-2xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground"
+              >
+                Baixar aplicativo
+              </button>
+            )}
+            <button
+              onClick={skipInstall}
+              className="rounded-2xl bg-card px-4 py-3.5 text-sm font-semibold text-foreground"
+            >
+              Continuar no navegador
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="w-full max-w-sm px-5 pt-6 pb-28 flex flex-col gap-4">
         {/* Header */}
         <header className="flex items-center justify-between">
@@ -425,20 +496,27 @@ function Index() {
         className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-card/95 backdrop-blur border-t border-border pb-[env(safe-area-inset-bottom)]"
       >
         <div className="grid grid-cols-4 px-6 py-3">
-          <button className="grid place-items-center text-foreground" aria-label="Início">
+          <Link to="/" className="grid place-items-center text-foreground" aria-label="Início">
             <Home className="h-5 w-5" />
-          </button>
-          <button className="grid place-items-center text-muted-foreground" aria-label="Placeholder">
-            <span className="h-4 w-4 rounded-sm bg-muted-foreground/60" />
-          </button>
-          <button className="grid place-items-center text-muted-foreground" aria-label="Placeholder">
-            <span className="h-4 w-4 rounded-sm bg-muted-foreground/60" />
-          </button>
-          <button className="grid place-items-center text-muted-foreground" aria-label="Placeholder">
-            <span className="h-4 w-4 rounded-sm bg-muted-foreground/60" />
-          </button>
+          </Link>
+          <Link to="/galeria" className="grid place-items-center text-muted-foreground hover:text-foreground transition" aria-label="Galeria">
+            <ImageIcon className="h-5 w-5" />
+          </Link>
+          <Link to="/chat" className="grid place-items-center text-muted-foreground hover:text-foreground transition" aria-label="Chat">
+            <MessageCircle className="h-5 w-5" />
+          </Link>
+          <a
+            href={STREAMER.coinsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="grid place-items-center text-muted-foreground hover:text-foreground transition"
+            aria-label="Comprar moedas"
+          >
+            <Coins className="h-5 w-5" />
+          </a>
         </div>
       </nav>
+
     </div>
   );
 }
