@@ -161,7 +161,13 @@ function GiftCard({ item }: { item: GiftItem }) {
           {item.name}
         </p>
       </div>
-      {!item.lit && (
+      {item.lit ? (
+        <div className="mt-auto flex min-h-9 items-center justify-center bg-primary/10 px-2 py-1.5">
+          <p className="w-full truncate text-center text-[10px] font-semibold text-primary">
+            {item.sponsor_name ?? "Iluminado"}
+          </p>
+        </div>
+      ) : (
         <div className="mt-auto flex min-h-9 items-center justify-center bg-background/50 px-2 py-1.5">
           <p className="text-[10px] text-muted-foreground">
             <span className="text-xs font-bold text-foreground">{item.remaining}</span> para iluminar
