@@ -30,14 +30,17 @@ function GaleriaPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["gifts"],
     queryFn: () => getGifts(),
-    refetchInterval: 60_000,
+    refetchInterval: 20_000,
+    refetchOnWindowFocus: true,
   });
 
   const autoSync = useQuery({
     queryKey: ["gift-sync"],
     queryFn: () => syncGiftsFromTikTok({ data: {} }),
-    refetchInterval: 60_000,
+    refetchInterval: 20_000,
     refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 
   useEffect(() => {
