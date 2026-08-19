@@ -302,7 +302,7 @@ function Index() {
                 aria-hidden
               />
             </div>
-            <h1 className="text-lg font-semibold tracking-tight">{STREAMER.name}</h1>
+            <h1 className="text-lg font-semibold tracking-tight">{STREAMER.name} — Notificações e Presentes da Live</h1>
           </div>
           <div className="flex items-center gap-2">
             <Link
@@ -324,6 +324,7 @@ function Index() {
 
 
         {/* Status live */}
+        <h2 className="sr-only">Status da live no TikTok</h2>
         <a
           href={isLive ? STREAMER.liveUrl : STREAMER.tiktok}
           target="_blank"
@@ -349,6 +350,7 @@ function Index() {
         </a>
 
         {/* Notificações toggle */}
+        <h2 className="sr-only">Notificações</h2>
         <div className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5">
           <span className="grid h-9 w-9 place-items-center rounded-full bg-background/60">
             <Bell className="h-4 w-4 text-primary" />
@@ -402,6 +404,7 @@ function Index() {
 
 
         {/* Grid cards */}
+        <h2 className="sr-only">Atalhos do app</h2>
         <div className="grid grid-cols-2 gap-3">
           <InternalCard
             to="/chat"
@@ -432,6 +435,7 @@ function Index() {
         </div>
 
         {/* Redes sociais */}
+        <h2 className="sr-only">Redes sociais do streamer</h2>
         <button
           onClick={() => setSocialOpen(true)}
           className="flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-3.5 text-left hover:bg-accent transition"
