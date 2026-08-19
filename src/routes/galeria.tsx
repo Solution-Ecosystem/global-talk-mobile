@@ -19,8 +19,10 @@ export const Route = createFileRoute("/galeria")({
         content: "Acompanhe os presentes iluminados da galeria atual do streamer no TikTok.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://global-talk-mobile.lovable.app/galeria" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://global-talk-mobile.lovable.app/galeria" }],
   }),
   component: GaleriaPage,
 });
@@ -72,6 +74,7 @@ function GaleriaPage() {
           <h1 className="truncate text-lg font-semibold tracking-tight">Galeria de Presentes</h1>
         </header>
 
+        <h2 className="sr-only">Status da galeria</h2>
         <div className="rounded-2xl bg-card px-4 py-3.5 flex items-center gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background/60">
             <Sparkles className="h-4 w-4 text-primary" />
@@ -102,6 +105,7 @@ function GaleriaPage() {
 
         {isLoading && <p className="text-xs text-muted-foreground">Carregando presentes...</p>}
 
+        <h2 className="sr-only">Presentes da galeria</h2>
         <div className="grid grid-cols-3 gap-2.5">
           {items.map((item: GiftItem) => (
             <GiftCard key={item.id} item={item} />
