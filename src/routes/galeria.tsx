@@ -78,14 +78,26 @@ function GaleriaPage() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold">
-              Galeria atual: {current}
-              {league && <span className="ml-1 text-xs text-muted-foreground">(liga {league})</span>}
+              Galeria atual: {league ?? current}
             </p>
             <p className="text-xs text-muted-foreground">
               Iluminados: {lit}/{items.length}
               {autoSync.isFetching && " · atualizando..."}
             </p>
           </div>
+          <button
+            type="button"
+            aria-label="Atualizar galeria"
+            onClick={() => {
+              autoSync.refetch();
+              qc.invalidateQueries({ queryKey: ["gifts"] });
+            }}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background/60 hover:bg-background transition"
+          >
+            <RefreshCw
+              className={`h-4 w-4 text-muted-foreground ${autoSync.isFetching ? "animate-spin" : ""}`}
+            />
+          </button>
         </div>
 
         {isLoading && <p className="text-xs text-muted-foreground">Carregando presentes...</p>}
@@ -102,9 +114,17 @@ function GaleriaPage() {
           </p>
         )}
 
+        {autoSync.data && !autoSync.data.ok && (
+          <p className="text-[11px] text-muted-foreground">
+            {autoSync.data.error === "sem_sala_ativa"
+              ? "O streamer não está ao vivo agora — mostrando a última galeria sincronizada."
+              : "Não foi possível falar com o TikTok agora — mostrando a última galeria sincronizada."}
+          </p>
+        )}
+
         <p className="text-[11px] text-muted-foreground">
           A galeria mostrada é sempre a galeria atual do streamer no TikTok e se atualiza sozinha a
-          cada 1 minuto enquanto a live estiver no ar.
+          cada 20 segundos enquanto a live estiver no ar.
         </p>
       </main>
     </div>
