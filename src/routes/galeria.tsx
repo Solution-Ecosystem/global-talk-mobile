@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Gift, Sparkles } from "lucide-react";
+import { ArrowLeft, Gift, RefreshCw, Sparkles } from "lucide-react";
 import { getGifts, syncGiftsFromTikTok, type GiftItem } from "@/lib/gifts.functions";
 
 export const Route = createFileRoute("/galeria")({
@@ -30,14 +30,17 @@ function GaleriaPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["gifts"],
     queryFn: () => getGifts(),
-    refetchInterval: 60_000,
+    refetchInterval: 20_000,
+    refetchOnWindowFocus: true,
   });
 
   const autoSync = useQuery({
     queryKey: ["gift-sync"],
     queryFn: () => syncGiftsFromTikTok({ data: {} }),
-    refetchInterval: 60_000,
+    refetchInterval: 20_000,
     refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 
   useEffect(() => {
@@ -75,14 +78,26 @@ function GaleriaPage() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold">
-              Galeria atual: {current}
-              {league && <span className="ml-1 text-xs text-muted-foreground">(liga {league})</span>}
+              Galeria atual: {league ?? current}
             </p>
             <p className="text-xs text-muted-foreground">
               Iluminados: {lit}/{items.length}
               {autoSync.isFetching && " · atualizando..."}
             </p>
           </div>
+          <button
+            type="button"
+            aria-label="Atualizar galeria"
+            onClick={() => {
+              autoSync.refetch();
+              qc.invalidateQueries({ queryKey: ["gifts"] });
+            }}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background/60 hover:bg-background transition"
+          >
+            <RefreshCw
+              className={`h-4 w-4 text-muted-foreground ${autoSync.isFetching ? "animate-spin" : ""}`}
+            />
+          </button>
         </div>
 
         {isLoading && <p className="text-xs text-muted-foreground">Carregando presentes...</p>}
@@ -99,9 +114,17 @@ function GaleriaPage() {
           </p>
         )}
 
+        {autoSync.data && !autoSync.data.ok && (
+          <p className="text-[11px] text-muted-foreground">
+            {autoSync.data.error === "sem_sala_ativa"
+              ? "O streamer não está ao vivo agora — mostrando a última galeria sincronizada."
+              : "Não foi possível falar com o TikTok agora — mostrando a última galeria sincronizada."}
+          </p>
+        )}
+
         <p className="text-[11px] text-muted-foreground">
           A galeria mostrada é sempre a galeria atual do streamer no TikTok e se atualiza sozinha a
-          cada 1 minuto enquanto a live estiver no ar.
+          cada 20 segundos enquanto a live estiver no ar.
         </p>
       </main>
     </div>
@@ -138,7 +161,13 @@ function GiftCard({ item }: { item: GiftItem }) {
           {item.name}
         </p>
       </div>
-      {!item.lit && (
+      {item.lit ? (
+        <div className="mt-auto flex min-h-9 items-center justify-center bg-primary/10 px-2 py-1.5">
+          <p className="w-full truncate text-center text-[10px] font-semibold text-primary">
+            {item.sponsor_name ?? "Iluminado"}
+          </p>
+        </div>
+      ) : (
         <div className="mt-auto flex min-h-9 items-center justify-center bg-background/50 px-2 py-1.5">
           <p className="text-[10px] text-muted-foreground">
             <span className="text-xs font-bold text-foreground">{item.remaining}</span> para iluminar
