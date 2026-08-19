@@ -26,6 +26,26 @@ import { getTikTokLiveStatus } from "@/lib/tiktok.functions";
 
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "APP TDC — Notificações e Presentes de @caiquevieira_" },
+      {
+        name: "description",
+        content:
+          "Receba notificação quando @caiquevieira_ entrar ao vivo no TikTok, acompanhe a galeria de presentes, ferramentas da live, chat e redes sociais.",
+      },
+      { property: "og:title", content: "APP TDC — Notificações e Presentes de @caiquevieira_" },
+      {
+        property: "og:description",
+        content:
+          "Notificações da live de @caiquevieira_ no TikTok, galeria de presentes, chat e redes sociais.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://global-talk-mobile.lovable.app/" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: "https://global-talk-mobile.lovable.app/" }],
+  }),
 });
 
 const STREAMER = {
