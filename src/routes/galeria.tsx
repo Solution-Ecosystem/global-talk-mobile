@@ -19,8 +19,10 @@ export const Route = createFileRoute("/galeria")({
         content: "Acompanhe os presentes iluminados da galeria atual do streamer no TikTok.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://global-talk-mobile.lovable.app/galeria" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://global-talk-mobile.lovable.app/galeria" }],
   }),
   component: GaleriaPage,
 });
